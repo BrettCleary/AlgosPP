@@ -9,3 +9,8 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+*.ninja
+*.json
+VSInheritEnvironments.txt
