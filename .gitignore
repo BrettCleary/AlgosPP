@@ -14,3 +14,13 @@ _deps
 *.ninja
 *.json
 VSInheritEnvironments.txt
+*.pdb
+*.ilk
+*.exe
+*.cmake
+*.ninja_log
+*.ninja_deps
+*.pc
+*.lib
+*.dll
+out

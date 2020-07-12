@@ -1,4 +1,4 @@
-#include "VanEmdeBoasTree.h"
+/*#include "VanEmdeBoasTree.h"
 
 #include <cmath>
 
@@ -9,8 +9,10 @@
 
 namespace algospp {
 
-	template <typename KEY, typename VAL> VanEmdeBoasTree<KEY, VAL>::VanEmdeBoasTree(const KEY maxBits): uBits(maxBits), Summary(High(maxBits)) {
-		
+	template <typename KEY, typename VAL> VanEmdeBoasTree<KEY, VAL>::VanEmdeBoasTree(const KEY maxBits): uBits(maxBits) {
+		if (maxBits > 1) {
+			Summary = std::make_shared <VanEmdeBoasTree>(High(maxBits));
+		}
 	}
 
 	template <typename KEY, typename VAL> std::shared_ptr<VAL> VanEmdeBoasTree<KEY, VAL>::Search(const KEY& key) {
@@ -104,11 +106,11 @@ namespace algospp {
 		return (x << uLowBits) | y;
 	}
 
-	/*template <typename KEY, typename VAL> void VanEmdeBoasTree<KEY, VAL>::EmptyTreeInsert(KEY key, VAL val) {
+	template <typename KEY, typename VAL> void VanEmdeBoasTree<KEY, VAL>::EmptyTreeInsert(KEY key, VAL val) {
 		MinPair = std::make_shared<pair<KEY, VAL>>(key, val);
 		MaxPair = MinPair;
 		NodeEmpty = false;
-	}*/
+	}
 
 	template <typename KEY, typename VAL> void VanEmdeBoasTree<KEY, VAL>::EmptyTreeInsert(const std::pair<KEY, std::shared_ptr<VAL>>& element) {
 		MinPair = element;
@@ -117,3 +119,4 @@ namespace algospp {
 
 
 } //algospp
+*/
