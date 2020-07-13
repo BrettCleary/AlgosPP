@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <unordered_map>
+#include <algorithm>
 
 
 namespace algospp {
@@ -35,7 +36,7 @@ namespace algospp {
 		//VanEmdeBoasTree<int, DataNode> VebTree;
 		int uBits = 0;
 		int MaxVal = 0;
-		std::vector<std::pair<int, std::shared_ptr<DataNode>>> TreeElements;
+		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
 
 	protected:
 
@@ -61,11 +62,10 @@ namespace algospp {
 
 		void Insert(int n) {
 			for (int i = 0; i < n; ++i) {
-				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(n));
+				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
 				int keyVal = rand() % MaxVal;
 				VebTree->Insert(keyVal, dataNodePtr);
-				std::pair<int, std::shared_ptr<DataNode>> element(keyVal, dataNodePtr);
-				TreeElements.push_back(element);
+				TreeElements[keyVal] = dataNodePtr;
 			}
 		}
 
@@ -77,6 +77,12 @@ namespace algospp {
 			return true;
 		}
 	};
+	
+	/*TEST_F(VanEmbdeBoasTreeTest, InsertTest) {
+		CreateTree(28);
+		Insert(pow(10, 7));
+		EXPECT_TRUE(true);
+	}*/
 
 	TEST_F(VanEmbdeBoasTreeTest, InsertSearchTest) {
 		CreateTree(28);
@@ -84,28 +90,23 @@ namespace algospp {
 		EXPECT_TRUE(SearchCheck());
 	}
 
-	TEST_F(VanEmbdeBoasTreeTest, InsertTest) {
-		CreateTree(28);
-		Insert(pow(10, 6));
-		EXPECT_TRUE(true);
-	}
+	
 
 	
 	TEST(MapBenchmarking, InsertSearchMapTest) {
 		int uBits = 28;
 		int n = pow(10, 6);
 		std::map<int, std::shared_ptr<DataNode>> testMap;
-		std::vector<std::pair<int, std::shared_ptr<DataNode>>> TreeElements;
+		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
 		
 
 		int MaxVal = 2 << uBits;
 		//Insert
 		for (int i = 0; i < n; ++i) {
-			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(n));
+			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
 			int keyVal = rand() % MaxVal;
-			testMap.insert(std::pair<int, std::shared_ptr<DataNode>> (keyVal, dataNodePtr));
-			std::pair<int, std::shared_ptr<DataNode>> element(keyVal, dataNodePtr);
-			TreeElements.push_back(element);
+			testMap[keyVal] = dataNodePtr;
+			TreeElements[keyVal] = dataNodePtr;
 		}
 
 		//search check
@@ -118,25 +119,24 @@ namespace algospp {
 		EXPECT_TRUE(ret);
 	}
 
-	TEST(MapBenchmarking, InsertMapTest) {
+	/*TEST(MapBenchmarking, InsertMapTest) {
 		int uBits = 28;
 		int n = pow(10, 6);
 		std::map<int, std::shared_ptr<DataNode>> testMap;
-		std::vector<std::pair<int, std::shared_ptr<DataNode>>> TreeElements;
+		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
 
 
 		int MaxVal = 2 << uBits;
 		//Insert
 		for (int i = 0; i < n; ++i) {
-			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(n));
+			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
 			int keyVal = rand() % MaxVal;
 			testMap.insert(std::pair<int, std::shared_ptr<DataNode>>(keyVal, dataNodePtr));
-			std::pair<int, std::shared_ptr<DataNode>> element(keyVal, dataNodePtr);
-			TreeElements.push_back(element);
+			TreeElements[keyVal] = dataNodePtr;
 		}
 		EXPECT_TRUE(true);
-	}
-
+	}*/
+	
 
 
 	/*TEST(MapBenchmarking, InsertSearchUnorderedMapTest) {
