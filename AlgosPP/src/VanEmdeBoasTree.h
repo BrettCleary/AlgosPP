@@ -17,26 +17,27 @@ template <typename KEY, typename VAL> class VanEmdeBoasTree {
 	std::pair<KEY, std::shared_ptr<VAL>> MinPair;
 	std::pair<KEY, std::shared_ptr<VAL>> MaxPair;
 	KEY uBits;
+	const KEY MaxVal;
 
 	std::shared_ptr<VanEmdeBoasTree> Summary = nullptr;
 	
 	std::map<KEY, VanEmdeBoasTree> Clusters;
 
 
-	KEY High(const KEY x) {
+	KEY High(const KEY& x) {
 		//bit shift right to get uHigh bits only
 		KEY uLowBits = uBits >> 1;
 		return x >> uLowBits;
 	}
 
-	KEY Low(const KEY x) {
+	KEY Low(const KEY& x) {
 		//use bitwise operators to clear all bits except uLow
 		KEY uLowBits = uBits >> 1;
 		KEY xLowOnes = (2 << uLowBits) - 1;
 		return x & xLowOnes;
 	}
 
-	KEY Index(const KEY x, const KEY y) {
+	KEY Index(const KEY& x, const KEY& y) {
 		KEY uLowBits = uBits >> 1;
 		return (x << uLowBits) | y;
 	}
@@ -44,10 +45,11 @@ template <typename KEY, typename VAL> class VanEmdeBoasTree {
 	void EmptyTreeInsert(const std::pair<KEY, std::shared_ptr<VAL>>& element) {
 		MinPair = element;
 		MaxPair = element;
+		NodeEmpty = false;
 	}
 
 public:
-	VanEmdeBoasTree(const KEY maxBits) : uBits(maxBits) {
+	VanEmdeBoasTree(const KEY maxBits) : uBits(maxBits), MaxVal((2 << uBits) - 1) {
 		if (maxBits > 1) {
 			Summary = std::make_shared <VanEmdeBoasTree>(High(maxBits));
 		}
@@ -83,10 +85,9 @@ public:
 		Insert(std::pair<KEY, std::shared_ptr<VAL>>(key, val));
 	}
 
-	//NEEDS TO BE pair<KEY, VAL*> element so that I can have diff keys with ptr to same val object and the val needs to be shared ptr
-	void Insert(std::pair<KEY, std::shared_ptr<VAL>> element) {
-		KEY key = element.first;
-		if (key < 0 || key >(2 << uBits) - 1)
+	void Insert(std::pair<KEY, std::shared_ptr<VAL>>& element) {
+		//KEY key = element.first;
+		if (element.first < 0 || element.first > MaxVal)
 			return;
 
 		if (NodeEmpty)
@@ -132,14 +133,5 @@ public:
 	std::pair<KEY, VAL*> Min() {
 		return MinPair;
 	}
-
-	/*template <typename KEY, typename VAL> void VanEmdeBoasTree<KEY, VAL>::EmptyTreeInsert(KEY key, VAL val) {
-		MinPair = std::make_shared<pair<KEY, VAL>>(key, val);
-		MaxPair = MinPair;
-		NodeEmpty = false;
-	}*/
 };
-
 } //algospp
-
-//#include "VanEmdeBoasTree.cpp"
