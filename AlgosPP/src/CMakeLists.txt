@@ -22,3 +22,5 @@ target_link_libraries(Testtwo PRIVATE gtest_main AlgosPPLibthree)
 
 #target_link_libraries(example gtest_main)
 #add_test(NAME example_test COMMAND example)
+
+SET_TARGET_PROPERTIES(Testtwo PROPERTIES LINK_FLAGS "/PROFILE")

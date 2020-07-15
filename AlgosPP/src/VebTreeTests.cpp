@@ -12,9 +12,31 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
+#include <map>
 
 
 namespace algospp {
+
+	void RandNum(int& randomNumber, int& MaxVal, int& uBits, int& counter, int& seed) {
+		if (counter > RAND_MAX) {
+			++seed;
+			srand(seed);
+			//randomNumber = rand() % MaxVal;
+			counter = 0;
+		}
+
+		int bitToFlip = rand() * (uBits - 1) / RAND_MAX;
+		if ((1 << bitToFlip) & randomNumber) {
+			//clear bit
+			randomNumber &= ~(1 << bitToFlip);
+		}
+		else {
+			//set bit
+			randomNumber |= 1 << bitToFlip;
+		}
+
+		++counter;
+	}
 	
 	struct DataNode {
 		std::string Name;
@@ -31,18 +53,18 @@ namespace algospp {
 		return lhs.Name != rhs.Name;
 	}
 
-	class VanEmbdeBoasTreeTest : public ::testing::Test {
+	class VanEmdeBoasTreeTest : public ::testing::Test {
 		VanEmdeBoasTree<int, DataNode>* VebTree = nullptr;
 		//VanEmdeBoasTree<int, DataNode> VebTree;
 		int uBits = 0;
 		int MaxVal = 0;
-		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
+		std::map<int, std::shared_ptr<DataNode>> TreeElements;
 
 	protected:
 
-		VanEmbdeBoasTreeTest(){
+		VanEmdeBoasTreeTest(){
 		}
-		~VanEmbdeBoasTreeTest() override {
+		~VanEmdeBoasTreeTest() override {
 
 		}
 		void SetUp() override {
@@ -61,11 +83,13 @@ namespace algospp {
 		}
 
 		void Insert(int n) {
+			int counter = 0, randomNumber = rand() % MaxVal, seed = 0;
 			for (int i = 0; i < n; ++i) {
 				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
-				int keyVal = rand() % MaxVal;
-				VebTree->Insert(keyVal, dataNodePtr);
-				TreeElements[keyVal] = dataNodePtr;
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				VebTree->Insert(randomNumber, dataNodePtr);
+				TreeElements[randomNumber] = dataNodePtr;
+				//std::cout << i << std::endl;
 			}
 		}
 
@@ -76,37 +100,132 @@ namespace algospp {
 			}
 			return true;
 		}
+
+		bool SuccessorCheck() {
+			auto endIter = --TreeElements.end();
+			int firstKey = TreeElements.begin()->first;
+			std::string nextName = (VebTree->Successor(firstKey)).second->Name;
+			for (auto iter = ++TreeElements.begin(); iter != endIter; ++iter) {
+
+				if (nextName != iter->second->Name) {
+					return false;
+				}
+
+				auto succElement = VebTree->Successor(iter->first);
+				if (succElement.second == nullptr) {
+					return false;
+				}
+				nextName = succElement.second->Name;
+				
+			}
+			return true;
+		}
+
+		bool PredecessorCheck() {
+			auto firstIter = ++TreeElements.begin();
+			auto endIter = --TreeElements.end();
+			int firstKey = endIter->first;
+			std::string nextName = (VebTree->Predecessor(firstKey)).second->Name;
+			for (auto iter = --endIter; iter != firstIter; --iter) {
+
+				if (nextName != iter->second->Name) {
+					return false;
+				}
+
+				auto succElement = VebTree->Predecessor(iter->first);
+				if (succElement.second == nullptr) {
+					return false;
+				}
+				nextName = succElement.second->Name;
+
+			}
+			return true;
+		}
+
+		void RandomDelete(int n) {
+			int counter = 0, seed = 0, maxNum = TreeElements.size();
+
+			int randomKey = 0;
+			for (int i = 0; i < n; ++i) {
+				RandNum(randomKey, maxNum, uBits, counter, seed);
+
+				VebTree->Delete(randomKey);
+				TreeElements.erase(randomKey);
+			}
+		}
+
+		void Delete(int n) {
+			for (auto pairIter = TreeElements.begin(); pairIter != TreeElements.end(); ++pairIter) {
+
+				VebTree->Delete(pairIter->first);
+				TreeElements.erase(pairIter);
+			}
+		}
 	};
-	
-	/*TEST_F(VanEmbdeBoasTreeTest, InsertTest) {
-		CreateTree(28);
-		Insert(pow(10, 7));
+	/*
+	TEST_F(VanEmdeBoasTreeTest, InsertTest) {
+		CreateTree(20);
+		Insert(pow(10, 6));
 		EXPECT_TRUE(true);
 	}*/
+	
+	TEST_F(VanEmdeBoasTreeTest, SearchTest) {
+		CreateTree(20);
+		Insert(pow(10,4));
+ 		EXPECT_TRUE(SearchCheck());
+	}
 
-	TEST_F(VanEmbdeBoasTreeTest, InsertSearchTest) {
-		CreateTree(28);
-		Insert(pow(10,6));
+	TEST_F(VanEmdeBoasTreeTest, SuccessorTest) {
+		CreateTree(20);
+		Insert(pow(10, 4));
+		EXPECT_TRUE(SuccessorCheck());
+	}
+
+	TEST_F(VanEmdeBoasTreeTest, PredecessorTest) {
+		CreateTree(20);
+		Insert(pow(10, 4));
+		EXPECT_TRUE(PredecessorCheck());
+	}
+
+	TEST_F(VanEmdeBoasTreeTest, DeleteTest) {
+		CreateTree(20);
+		Insert(pow(10, 5));
+		Delete(pow(10, 1));
+		EXPECT_TRUE(SuccessorCheck());
+		EXPECT_TRUE(PredecessorCheck());
 		EXPECT_TRUE(SearchCheck());
 	}
 
+	TEST_F(VanEmdeBoasTreeTest, RandomDeleteTest) {
+		CreateTree(20);
+		Insert(pow(10, 5));
+		RandomDelete(pow(10, 1));
+		EXPECT_TRUE(SuccessorCheck());
+		EXPECT_TRUE(PredecessorCheck());
+		EXPECT_TRUE(SearchCheck());
+	}
 	
-
 	
+	/*
 	TEST(MapBenchmarking, InsertSearchMapTest) {
-		int uBits = 28;
+		int uBits = 20;
 		int n = pow(10, 6);
 		std::map<int, std::shared_ptr<DataNode>> testMap;
 		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
 		
 
-		int MaxVal = 2 << uBits;
+		int MaxVal = (1 << uBits) - 1;
+		int counter = 0;
+		int randomNumber = rand() % MaxVal;
+		int seed = 0;
 		//Insert
 		for (int i = 0; i < n; ++i) {
 			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
-			int keyVal = rand() % MaxVal;
-			testMap[keyVal] = dataNodePtr;
-			TreeElements[keyVal] = dataNodePtr;
+			
+			RandNum(randomNumber, MaxVal, uBits, counter, seed);
+			testMap[randomNumber] = dataNodePtr;
+			TreeElements[randomNumber] = dataNodePtr;
+
 		}
 
 		//search check
@@ -117,10 +236,10 @@ namespace algospp {
 				ret = false;
 		}
 		EXPECT_TRUE(ret);
-	}
-
-	/*TEST(MapBenchmarking, InsertMapTest) {
-		int uBits = 28;
+	}*/
+	/*
+	TEST(MapBenchmarking, InsertMapTest) {
+		int uBits = 20;
 		int n = pow(10, 6);
 		std::map<int, std::shared_ptr<DataNode>> testMap;
 		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
