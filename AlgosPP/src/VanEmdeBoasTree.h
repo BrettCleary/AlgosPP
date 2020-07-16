@@ -12,7 +12,6 @@
 
 namespace algospp {
 
-	//KEY should be unsigned integer type
 template <typename KEY, typename VAL> class VanEmdeBoasTree {
 
 	bool NodeEmpty = true;
@@ -98,7 +97,7 @@ public:
 		}
 	}
 
-	void Delete(const KEY key) {
+	void Delete(KEY key) {
 		if (isBottomNode) {
 			MinPair.first &= ~(1 << key);
 			if (MinPair.first == 0)
@@ -116,6 +115,8 @@ public:
 			auto firstCluster = Clusters.find(firstClusterKey);
 			std::pair<KEY, std::shared_ptr<VAL>> minLowPair = firstCluster->second.Min();
 			minLowPair.first = Index(firstClusterKey, minLowPair.first);
+			//minKey is not held subtrees so new minKey from subtree must be deleted from subtree
+			key = minLowPair.first;
 			MinPair = minLowPair;
 		}
 
@@ -204,7 +205,7 @@ public:
 		else {
 			KEY predCluster = Summary != nullptr ? Summary->Predecessor(highKey).first : highKey;
 
-			//if MinPair is the predecessor and node is not a leaf, predecessor must be the MinPair
+			
 			if (predCluster == highKey) {
 				return MinPair;
 			}
@@ -273,7 +274,10 @@ public:
 			element = temp;
 
 			if (element.first == MinPair.first) {
-				element = MinPair;
+				if (element.first == MaxPair.first) {
+					MaxPair = MinPair;
+				}
+				return;
 			}
 
 			//handles 0,0 and 1,1 min,max pair keys by replacement
@@ -325,6 +329,7 @@ public:
 
 		return MinPair;
 	}
+
 	std::pair<KEY, std::shared_ptr<VAL>> Max() {
 		if (isBottomNode) {
 			for (KEY i = MaxVal; i >= 0; --i) {

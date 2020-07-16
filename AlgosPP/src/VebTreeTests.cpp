@@ -1,7 +1,6 @@
 //#include "../../Data Structures/VanEmdeBoasTree.h"
 #include "VanEmdeBoasTree.h"
 #include "gtest/gtest.h"
-//#include "simple_lib.h"
 
 #include <cstdlib>
 #include <string>
@@ -89,19 +88,34 @@ namespace algospp {
 				RandNum(randomNumber, MaxVal, uBits, counter, seed);
 				VebTree->Insert(randomNumber, dataNodePtr);
 				TreeElements[randomNumber] = dataNodePtr;
-				//std::cout << i << std::endl;
 			}
 		}
 
 		bool SearchCheck() {
+			//check that TreeElements is a subset of VebTree
 			for (auto node_i : TreeElements) {
 				if (*(node_i.second) != *(VebTree->Search(node_i.first)))
 					return false;
 			}
+
+			//check that VebTree is a subset of TreeElements
+			for (auto pairIter = VebTree->Min(); pairIter < VebTree->Max(); pairIter = VebTree->Successor(pairIter.first)) {
+				auto nodeStdMap = TreeElements.find(pairIter.first);
+
+				if (nodeStdMap == TreeElements.end() || pairIter.second->Name != nodeStdMap->second->Name) {
+					return false;
+				}
+			}
+
 			return true;
 		}
 
 		bool SuccessorCheck() {
+			if (TreeElements.empty() && VebTree->Empty())
+				return true;
+			else if (TreeElements.empty() || VebTree->Empty())
+				return false;
+
 			auto endIter = --TreeElements.end();
 			int firstKey = TreeElements.begin()->first;
 			std::string nextName = (VebTree->Successor(firstKey)).second->Name;
@@ -122,6 +136,11 @@ namespace algospp {
 		}
 
 		bool PredecessorCheck() {
+			if (TreeElements.empty() && VebTree->Empty())
+				return true;
+			else if (TreeElements.empty() || VebTree->Empty())
+				return false;
+
 			auto firstIter = ++TreeElements.begin();
 			auto endIter = --TreeElements.end();
 			int firstKey = endIter->first;
@@ -145,33 +164,40 @@ namespace algospp {
 		void RandomDelete(int n) {
 			int counter = 0, seed = 0, maxNum = TreeElements.size();
 
-			int randomKey = 0;
+			int randomNumber = 0;
+			auto deletePairIter = TreeElements.lower_bound(randomNumber);
 			for (int i = 0; i < n; ++i) {
-				RandNum(randomKey, maxNum, uBits, counter, seed);
-
-				VebTree->Delete(randomKey);
-				TreeElements.erase(randomKey);
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				deletePairIter = TreeElements.lower_bound(randomNumber);
+				if (deletePairIter == TreeElements.end())
+					continue;
+				VebTree->Delete(deletePairIter->first);
+				TreeElements.erase(deletePairIter->first);
 			}
 		}
 
 		void Delete(int n) {
-			for (auto pairIter = TreeElements.begin(); pairIter != TreeElements.end(); ++pairIter) {
-
-				VebTree->Delete(pairIter->first);
-				TreeElements.erase(pairIter);
+			int i = 0;
+			auto pairIter = TreeElements.begin();
+			while (pairIter != TreeElements.end() && i < n) {
+				auto pairIterCopy = pairIter;
+				++pairIter;
+				VebTree->Delete(pairIterCopy->first);
+				TreeElements.erase(pairIterCopy);
+				++i;
 			}
 		}
 	};
-	/*
+	
 	TEST_F(VanEmdeBoasTreeTest, InsertTest) {
 		CreateTree(20);
-		Insert(pow(10, 6));
+		Insert(pow(10, 4));
 		EXPECT_TRUE(true);
-	}*/
+	}
 	
 	TEST_F(VanEmdeBoasTreeTest, SearchTest) {
 		CreateTree(20);
-		Insert(pow(10,4));
+		Insert(pow(10, 4));
  		EXPECT_TRUE(SearchCheck());
 	}
 
@@ -189,8 +215,8 @@ namespace algospp {
 
 	TEST_F(VanEmdeBoasTreeTest, DeleteTest) {
 		CreateTree(20);
-		Insert(pow(10, 5));
-		Delete(pow(10, 1));
+		Insert(pow(10, 4));
+		Delete(pow(10, 4)/2);
 		EXPECT_TRUE(SuccessorCheck());
 		EXPECT_TRUE(PredecessorCheck());
 		EXPECT_TRUE(SearchCheck());
@@ -198,8 +224,8 @@ namespace algospp {
 
 	TEST_F(VanEmdeBoasTreeTest, RandomDeleteTest) {
 		CreateTree(20);
-		Insert(pow(10, 5));
-		RandomDelete(pow(10, 1));
+		Insert(pow(10, 4));
+		RandomDelete(pow(10, 4) / 2);
 		EXPECT_TRUE(SuccessorCheck());
 		EXPECT_TRUE(PredecessorCheck());
 		EXPECT_TRUE(SearchCheck());
