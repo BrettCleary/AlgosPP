@@ -1,5 +1,4 @@
-//#include "../../Data Structures/VanEmdeBoasTree.h"
-#include "VanEmdeBoasTree.h"
+#include "../../src/Data Structures/VanEmdeBoasTree.h"
 #include "gtest/gtest.h"
 
 #include <cstdlib>
@@ -20,7 +19,6 @@ namespace algospp {
 		if (counter > RAND_MAX) {
 			++seed;
 			srand(seed);
-			//randomNumber = rand() % MaxVal;
 			counter = 0;
 		}
 
@@ -54,7 +52,6 @@ namespace algospp {
 
 	class VanEmdeBoasTreeTest : public ::testing::Test {
 		VanEmdeBoasTree<int, DataNode>* VebTree = nullptr;
-		//VanEmdeBoasTree<int, DataNode> VebTree;
 		int uBits = 0;
 		int MaxVal = 0;
 		std::map<int, std::shared_ptr<DataNode>> TreeElements;
@@ -310,7 +307,5 @@ namespace algospp {
 		}
 		EXPECT_TRUE(ret);
 	}*/
-
-	
 
 }//algospp

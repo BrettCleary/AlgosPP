@@ -303,10 +303,8 @@ public:
 
 				//make new veb tree
 				std::pair<KEY, std::shared_ptr<VAL>> elementLow(lowKey, element.second);
-				//Clusters.emplace(highKey, VanEmdeBoasTree(uBits >> 1, elementLow));
 				std::pair<KEY, VanEmdeBoasTree> newCluster(highKey, VanEmdeBoasTree(uBits >> 1, std::move(elementLow)));
 				Clusters.insert(std::move(newCluster));
-				//cluster_i = (Clusters.insert(std::pair<KEY, VanEmdeBoasTree> ()).first;
 			}
 		}
 		if (element.first >= MaxPair.first) {

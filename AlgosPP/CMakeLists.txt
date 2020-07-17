@@ -1,11 +1,6 @@
-﻿# CMakeList.txt : CMake project for AlgosPP, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.8)
 
 project ("AlgosPP")
-
-
 
 # Download and unpack googletest at configure time
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -44,17 +39,11 @@ endif()
 #target_link_libraries(example gtest_main)
 #add_test(NAME example_test COMMAND example)
 
-
-
 # TODO: Add tests and install targets if needed.
 enable_testing()
 
-# Add source to this project's executable.
-#add_executable (AlgosPP "src/AlgosPP.cpp" "src/AlgosPP.h" "VanEmdeBoasTree.h" "VanEmdeBoasTree.cpp" "Tests/VebTreeTests.cpp" )
-#set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
-#set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 add_subdirectory(src)
-#add_subdirectory(Tests)
+add_subdirectory(Tests)
 
 
 
