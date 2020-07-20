@@ -1,4 +1,7 @@
 #include "../../src/Sorting/Heapsort.h"
+#include "../../src/Sorting/InsertionSort.h"
+#include "../../src/Sorting/Quicksort.h"
+
 #include "gtest/gtest.h"
 
 #include <vector>
@@ -50,7 +53,7 @@ protected:
 
 
 public:
-	void CreateVector(int n) {
+	void CreateRandomVector(int n) {
 		int randomNumber = 0, counter = 0, seed = 0;
 		for (int i = 0; i < n; ++i) {
 			RandNum(randomNumber, counter, seed);
@@ -59,8 +62,13 @@ public:
 		}
 	}
 
+	void UseGivenVector(std::vector<int> vec) {
+		testVectorStd = vec;
+		testVectorAlgoPP = vec;
+	}
+
 	template <class Compare>
-	bool SortIsCorrect(Compare comp) {
+	bool HeapsortIsCorrect(Compare comp) {
 		std::sort(testVectorStd.begin(), testVectorStd.end());
 		heapsort(testVectorAlgoPP.begin(), testVectorAlgoPP.end());
 		for (int i = 0; i < testVectorStd.size(); ++i) {
@@ -69,12 +77,38 @@ public:
 		}
 		return true;
 	}
+
+	template <class Compare>
+	bool InsertionSortIsCorrect(Compare comp) {
+		std::sort(testVectorStd.begin(), testVectorStd.end());
+		insertionSort(testVectorAlgoPP.begin(), testVectorAlgoPP.end());
+		for (int i = 0; i < testVectorStd.size(); ++i) {
+			if (i >= testVectorStd.size() || i >= testVectorAlgoPP.size() || testVectorStd[i] != testVectorAlgoPP[i])
+				return false;
+		}
+		return true;
+	}
+
 };
 
 TEST_F(SortTest, HeapsortCorrectTest) {
-	CreateVector(pow(10,6));
+	CreateRandomVector(pow(10, 4));
 
-	EXPECT_TRUE(SortIsCorrect(std::less<int>()));
+	EXPECT_TRUE(HeapsortIsCorrect(std::less<int>()));
+}
+
+TEST_F(SortTest, InsertionSortCorrectTest) {
+	CreateRandomVector(pow(10, 3));
+
+	EXPECT_TRUE(InsertionSortIsCorrect(std::less<int>()));
+}
+
+TEST_F(SortTest, InsertionSortCorrectTest2) {
+	std::vector<int> testSeq{ 5, 2, 4, 6, 1, 3 };
+
+	UseGivenVector(testSeq);
+
+	EXPECT_TRUE(InsertionSortIsCorrect(std::less<int>()));
 }
 
 }//algospp
