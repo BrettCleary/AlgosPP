@@ -71,8 +71,8 @@ public:
 	}
 };
 
-TEST_F(SortTest, InsertTest) {
-	CreateVector(3);
+TEST_F(SortTest, HeapsortCorrectTest) {
+	CreateVector(pow(10,6));
 
 	EXPECT_TRUE(SortIsCorrect(std::less<int>()));
 }

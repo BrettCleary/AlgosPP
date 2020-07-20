@@ -11,17 +11,9 @@ template <class RandomAccessIterator, class Compare>
 void heapsort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
     int heapSize = last - first;
     buildMaxHeap(first, last, comp, heapSize);
-    //auto iter = last;
-    for (auto iter = first; iter != last; ++iter) {
-        std::cout << *iter << std::endl;
-    }
 
-
-    for (auto iter = --last; iter != first; --iter) {
-        //std::swap(first, iter);
-        auto temp = *iter;
-        *iter = *first;
-        *first = temp;
+    for (auto iter = last - 1; iter != first; --iter) {
+        std::swap(*first, *iter);
         --heapSize;
         maxHeapify(first, last, comp, 1, heapSize);
     }
@@ -53,7 +45,6 @@ void maxHeapify(RandomAccessIterator first, RandomAccessIterator last, Compare c
     }
     if (largestIndex != index) {
         std::swap(first[index - 1], first[largestIndex - 1]);
-
         maxHeapify(first, last, comp, largestIndex, heapSize);
     }
 }
