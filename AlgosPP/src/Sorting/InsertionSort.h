@@ -12,6 +12,9 @@ namespace algospp {
 
     template <class RandomAccessIterator, class Compare>
     void insertionSort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
+        if (first == last)
+            return;
+
         for (auto iter = first + 1; iter != last; ++iter) {
             auto key(std::move(*iter));
 

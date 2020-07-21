@@ -28,7 +28,7 @@ namespace {
 template <class RandomAccessIterator, class Compare>
 void introsortRecursive(RandomAccessIterator first, RandomAccessIterator last, Compare& comp, unsigned long long maxDepth) {
 
-    if (last - first < 20) {
+    if (last - first < 101) {
         insertionSort(first, last, comp);
     }
     else if (maxDepth == 0) {
@@ -57,10 +57,6 @@ RandomAccessIterator partitionIntrosort(RandomAccessIterator first, RandomAccess
     return i;
 }
 }//unnamed namespace
-
-
-
 }//algospp
-
 #endif // !ALGOSPP_SRC_SORTING_INTROSORT_H_
 

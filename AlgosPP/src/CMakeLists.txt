@@ -1,5 +1,9 @@
 add_library(AlgosPPDataStructures STATIC "Data Structures/VanEmdeBoasTree.h" "Data Structures/VanEmdeBoasTree.cpp")
 set_target_properties(AlgosPPDataStructures PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(AlgosPPDataStructures PROPERTIES VERSION "1.0.0")
+set_target_properties(AlgosPPDataStructures PROPERTIES SOVERSION "1")
 
 add_library(AlgosPPSorting STATIC "Sorting/Heapsort.h" "Sorting/Heapsort.cpp" "Sorting/InsertionSort.h" "Sorting/InsertionSort.cpp" "Sorting/Quicksort.h" "Sorting/Introsort.h")
 set_target_properties(AlgosPPSorting PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(AlgosPPSorting PROPERTIES VERSION "1.0.0")
+set_target_properties(AlgosPPSorting PROPERTIES SOVERSION "1")

@@ -1,5 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
+#set(CMAKE_DEBUG_POSTFIX d)
+
 project ("AlgosPP")
 
 # Download and unpack googletest at configure time

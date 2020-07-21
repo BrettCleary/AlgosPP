@@ -13,6 +13,9 @@ void heapsort(RandomAccessIterator first, RandomAccessIterator last) {
 
 template <class RandomAccessIterator, class Compare>
 void heapsort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
+    if (first == last)
+        return;
+
     int heapSize = last - first;
     buildMaxHeap(first, last, comp, heapSize);
 

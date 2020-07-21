@@ -134,26 +134,26 @@ TEST_F(SortTest, RandomQuicksortCorrectTest2) {
 }
 
 TEST_F(SortTest, IntrosortCorrectTest) {
-	CreateRandomVector(pow(10, 2));
+	CreateRandomVector(pow(10, 4));
 	auto pIntrosort = introsort<std::vector<int>::iterator>;
 	EXPECT_TRUE(SortIsCorrect(pIntrosort));
 }
-
+/*
 TEST_F(SortTest, ProfileSorts) {
 	auto pHeapsort = heapsort<std::vector<int>::iterator>;
 	auto pInsertionSort = insertionSort<std::vector<int>::iterator>;
 	auto pQuicksort = quicksort<std::vector<int>::iterator>;
 	auto pRandQuicksort = randomQuicksort<std::vector<int>::iterator>;
 	auto stdSort = std::sort<std::vector<int>::iterator>;
-	std::vector<decltype(pHeapsort)> pSortList{ pHeapsort, pQuicksort, pRandQuicksort, pInsertionSort, stdSort };
-	std::vector<std::string> sortNames{ "heapsort", "quicksort", "randQuicksort", "insertionSort", "stdSort" };
+	auto pIntrosort = introsort<std::vector<int>::iterator>;
+	std::vector<decltype(pHeapsort)> pSortList{ pInsertionSort, pHeapsort, pQuicksort, pRandQuicksort, pIntrosort, stdSort };
+	std::vector<std::string> sortNames{"insertionsort", "heapsort", "quicksort", "randQuicksort", "introsort", "stdSort" };
 
 	std::cout << "\n" << std::endl;
-	for (int i = 1; i < 10; ++i) {
-		std::cout << "SORTING 10* " << i << " ELEMENTS: " << "\n" << std::endl;
+	for (int i = 1; i < 5; ++i) {
+		std::cout << "SORTING 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
 		for (int j = 0; j < pSortList.size(); ++j) {
-			CreateRandomVector(10 * i);
-			//std::cout << "Beginning sort: " << sortNames[j] << std::endl;
+			CreateRandomVector(pow(10,i));
 			auto start = std::chrono::system_clock::now();
 			Sort(pSortList[j]);
 			auto end = std::chrono::system_clock::now();
@@ -163,13 +163,6 @@ TEST_F(SortTest, ProfileSorts) {
 		std::cout << std::endl;
 	}
 	std::cout << "\n" << std::endl;
-
-
-
-	/*for (unsigned long long i = 0; i < pow(10,5); ++i) {
-		CreateRandomVector(50);
-		Sort(pSortList[3]);
-	}*/
-}
+}*/
 
 }//algospp
