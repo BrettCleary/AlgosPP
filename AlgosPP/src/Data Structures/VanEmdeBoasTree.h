@@ -1,7 +1,6 @@
 
 #ifndef ALGOSPP_DS_VEBTREE_H_
 #define ALGOSPP_DS_VEBTREE_H_
-#endif // !ALGOSPP_DS_VEBTREE_H_
 
 #include <utility>
 #include <unordered_map>
@@ -341,3 +340,5 @@ public:
 	}
 };
 } //algospp
+
+#endif // !ALGOSPP_DS_VEBTREE_H_

@@ -1,3 +1,7 @@
+#ifndef ALGOSPP_SRC_SORTING_HEAPSORT_H_
+#define ALGOSPP_SRC_SORTING_HEAPSORT_H_
+
+
 #include <functional>
 
 namespace algospp{
@@ -59,3 +63,4 @@ int right(const int& index) {
 
 }//unnamed namespace
 }//algospp
+#endif // !ALGOSPP_SRC_SORTING_HEAPSORT_H_
