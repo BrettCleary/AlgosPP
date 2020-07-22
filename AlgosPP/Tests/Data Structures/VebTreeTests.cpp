@@ -10,7 +10,8 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
-#include <map>
+#include <chrono>
+#include <ctime>
 
 
 namespace algospp {
@@ -72,20 +73,38 @@ namespace algospp {
 
 	public:
 
+		bool TreeEmpty() {
+			return VebTree->Empty();
+		}
+
 		void CreateTree(int uBitsInit) {
 			uBits = uBitsInit;
 			VebTree = new algospp::VanEmdeBoasTree<int, DataNode>(uBitsInit);
 			MaxVal = 2 << uBits;
 		}
 
-		void Insert(int n) {
+		void Insert(int n, bool insertMap) {
 			int counter = 0, randomNumber = rand() % MaxVal, seed = 0;
 			for (int i = 0; i < n; ++i) {
 				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
 				RandNum(randomNumber, MaxVal, uBits, counter, seed);
 				VebTree->Insert(randomNumber, dataNodePtr);
-				TreeElements[randomNumber] = dataNodePtr;
+				if (insertMap)
+					TreeElements[randomNumber] = dataNodePtr;
 			}
+		}
+
+		void RandomSearch(int n) {
+			int counter = 0, randomNumber = rand() % MaxVal, seed = 0;
+			while (n > 0) {
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				VebTree->Search(randomNumber);
+				--n;
+			}
+		}
+
+		std::shared_ptr<DataNode> Search(int key) {
+			return VebTree->Search(key);
 		}
 
 		bool SearchCheck() {
@@ -188,31 +207,31 @@ namespace algospp {
 	
 	TEST_F(VanEmdeBoasTreeTest, InsertTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 7), true);
 		EXPECT_TRUE(true);
 	}
 	
 	TEST_F(VanEmdeBoasTreeTest, SearchTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 4), true);
  		EXPECT_TRUE(SearchCheck());
 	}
 
 	TEST_F(VanEmdeBoasTreeTest, SuccessorTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 4), true);
 		EXPECT_TRUE(SuccessorCheck());
 	}
 
 	TEST_F(VanEmdeBoasTreeTest, PredecessorTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 4), true);
 		EXPECT_TRUE(PredecessorCheck());
 	}
 
 	TEST_F(VanEmdeBoasTreeTest, DeleteTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 4), true);
 		Delete(pow(10, 4)/2);
 		EXPECT_TRUE(SuccessorCheck());
 		EXPECT_TRUE(PredecessorCheck());
@@ -221,45 +240,122 @@ namespace algospp {
 
 	TEST_F(VanEmdeBoasTreeTest, RandomDeleteTest) {
 		CreateTree(20);
-		Insert(pow(10, 4));
+		Insert(pow(10, 4), true);
 		RandomDelete(pow(10, 4) / 2);
 		EXPECT_TRUE(SuccessorCheck());
 		EXPECT_TRUE(PredecessorCheck());
 		EXPECT_TRUE(SearchCheck());
 	}
 	
-	
-	/*
-	TEST(MapBenchmarking, InsertSearchMapTest) {
+	TEST_F(VanEmdeBoasTreeTest, InsertSearchProfileTest) {
 		int uBits = 20;
-		int n = pow(10, 6);
+
+		std::cout << "\n" << std::endl;
+		for (int i = 1; i < 10; ++i) {
+			std::cout << "INSERTING/SEARCHING FOR 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
+			CreateTree(uBits);
+			auto start = std::chrono::system_clock::now();
+			Insert(pow(10, i), false);
+			RandomSearch(pow(10, i));
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> milliSeconds = (end - start) * pow(10, 3);
+			std::cout << "VebTree Search Insert took " << milliSeconds.count() << " ms to execute." << std::endl;
+
+			Delete(pow(10,i));
+			//EXPECT_TRUE(TreeEmpty());
+			std::cout << std::endl;
+		}
+		std::cout << "\n" << std::endl;
+	}
+
+	class MapTest : public ::testing::Test {
 		std::map<int, std::shared_ptr<DataNode>> testMap;
-		std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
-		
 
-		int MaxVal = (1 << uBits) - 1;
-		int counter = 0;
-		int randomNumber = rand() % MaxVal;
-		int seed = 0;
-		//Insert
-		for (int i = 0; i < n; ++i) {
-			std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
-			
-			RandNum(randomNumber, MaxVal, uBits, counter, seed);
-			testMap[randomNumber] = dataNodePtr;
-			TreeElements[randomNumber] = dataNodePtr;
+	protected:
+
+		MapTest() {
+		}
+		~MapTest() override {
+
+		}
+		void SetUp() override {
+
+		}
+		void TearDown() override {
 
 		}
 
-		//search check
-		bool ret = true;
-		for (auto node_i : TreeElements) {
-			auto iter = testMap.find(node_i.first);
-			if (iter != testMap.end() && *(node_i.second) != *(iter->second))
-				ret = false;
+	public:
+		void mapInsertSearch(int&& n, int&& uBits) {
+			int MaxVal = (1 << uBits) - 1;
+			int counter = 0;
+			int randomNumber = rand() % MaxVal;
+			int seed = 0;
+			//Insert
+			for (int i = 0; i < n; ++i) {
+				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
+
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				testMap[randomNumber] = dataNodePtr;
+			}
+
+			//search
+			for (int i = 0; i < n; ++i) {
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				auto iter = testMap.find(randomNumber);
+			}
 		}
-		EXPECT_TRUE(ret);
-	}*/
+
+		void ClearMap() {
+			testMap.clear();
+		}
+
+
+		bool mapInsertSearchCorrect(int&& n, int&& uBits) {
+			std::map<int, std::shared_ptr<DataNode>> testMap;
+			std::unordered_map<int, std::shared_ptr<DataNode>> TreeElements;
+
+			int MaxVal = (1 << uBits) - 1;
+			int counter = 0;
+			int randomNumber = rand() % MaxVal;
+			int seed = 0;
+			//Insert
+			for (int i = 0; i < n; ++i) {
+				std::shared_ptr<DataNode> dataNodePtr = std::make_shared<DataNode>("a" + std::to_string(i));
+
+				RandNum(randomNumber, MaxVal, uBits, counter, seed);
+				testMap[randomNumber] = dataNodePtr;
+				TreeElements[randomNumber] = dataNodePtr;
+			}
+
+			//search check
+			bool ret = true;
+			for (auto node_i : TreeElements) {
+				auto iter = testMap.find(node_i.first);
+				if (iter != testMap.end() && *(node_i.second) != *(iter->second))
+					ret = false;
+			}
+			return ret;
+		}
+
+	};
+
+	TEST_F(MapTest, InsertSearchMapTest) {
+		std::cout << "\n" << std::endl;
+		for (int i = 9; i < 10; ++i) {
+			std::cout << "INSERTING/SEARCHING FOR 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
+
+			auto start = std::chrono::system_clock::now();
+			mapInsertSearch(pow(10, i), 20);
+			auto end = std::chrono::system_clock::now();
+			ClearMap();
+			std::chrono::duration<double> milliSeconds = (end - start) * pow(10, 3);
+			std::cout << "std::map Search Insert took " << milliSeconds.count() << " ms to execute." << std::endl;
+			std::cout << std::endl;
+		}
+		std::cout << "\n" << std::endl;
+	}
+
 	/*
 	TEST(MapBenchmarking, InsertMapTest) {
 		int uBits = 20;
