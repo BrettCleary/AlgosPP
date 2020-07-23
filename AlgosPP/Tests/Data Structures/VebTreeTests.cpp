@@ -92,6 +92,7 @@ namespace algospp {
 				if (insertMap)
 					TreeElements[randomNumber] = dataNodePtr;
 			}
+			std::cout << "num unique elements: " << TreeElements.size() << std::endl;
 		}
 
 		void RandomSearch(int n) {
@@ -207,7 +208,7 @@ namespace algospp {
 	
 	TEST_F(VanEmdeBoasTreeTest, InsertTest) {
 		CreateTree(20);
-		Insert(pow(10, 7), true);
+		Insert(pow(10, 4), true);
 		EXPECT_TRUE(true);
 	}
 	
@@ -255,7 +256,7 @@ namespace algospp {
 			std::cout << "INSERTING/SEARCHING FOR 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
 			CreateTree(uBits);
 			auto start = std::chrono::system_clock::now();
-			Insert(pow(10, i), false);
+			Insert(pow(10, i), true);
 			RandomSearch(pow(10, i));
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> milliSeconds = (end - start) * pow(10, 3);
@@ -298,6 +299,7 @@ namespace algospp {
 				RandNum(randomNumber, MaxVal, uBits, counter, seed);
 				testMap[randomNumber] = dataNodePtr;
 			}
+			std::cout << "num unique elements: " << testMap.size() << std::endl;
 
 			//search
 			for (int i = 0; i < n; ++i) {
@@ -342,7 +344,7 @@ namespace algospp {
 
 	TEST_F(MapTest, InsertSearchMapTest) {
 		std::cout << "\n" << std::endl;
-		for (int i = 9; i < 10; ++i) {
+		for (int i = 1; i < 10; ++i) {
 			std::cout << "INSERTING/SEARCHING FOR 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
 
 			auto start = std::chrono::system_clock::now();

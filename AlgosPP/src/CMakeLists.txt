@@ -7,3 +7,8 @@ add_library(AlgosPPSorting STATIC "Sorting/Heapsort.h" "Sorting/Heapsort.cpp" "S
 set_target_properties(AlgosPPSorting PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(AlgosPPSorting PROPERTIES VERSION "1.0.0")
 set_target_properties(AlgosPPSorting PROPERTIES SOVERSION "1")
+
+add_library(AlgosPPGraph STATIC "Graph Algorithms/BreadthFirstSearch.h" "Graph Algorithms/BreadthFirstSearch.cpp" "Graph Algorithms/Graph.h" "Graph Algorithms/Graph.cpp" "Graph Algorithms/DepthFirstSearch.h" "Graph Algorithms/DepthFirstSearch.cpp")
+set_target_properties(AlgosPPGraph PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(AlgosPPGraph PROPERTIES VERSION "1.0.0")
+set_target_properties(AlgosPPGraph PROPERTIES SOVERSION "1")
