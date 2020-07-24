@@ -9,6 +9,7 @@ namespace algospp{
 struct Node{
     bool marked = false;
     unsigned long long pathLength = -1;
+    unsigned long long finishTime = -1;
     std::shared_ptr<Node> prevNode = nullptr;
     std::vector<std::shared_ptr<Node>> adjList;
 };
@@ -35,6 +36,10 @@ class Graph{
         return vertices[index];
     }
 
+    void push_back(std::shared_ptr<Node> node) {
+        vertices.push_back(node);
+    }
+
     void CreateRandomGraph(int numVertices, int numEdges){
         int edgesPerVert = numEdges / numVertices + 1;
 
@@ -56,6 +61,7 @@ class Graph{
             i->marked = false;
             i->pathLength = -1;
             i->prevNode = nullptr;
+            i->finishTime = -1;
         }
     }
 
