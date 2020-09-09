@@ -1,6 +1,7 @@
 #include "../../src/Graph Algorithms/BreadthFirstSearch.h"
 #include "../../src/Graph Algorithms/DepthFirstSearch.h"
 #include "../../src/Graph Algorithms/Graph.h"
+#include "../../src/Graph Algorithms/TopologicalSort.h"
 
 #include "gtest/gtest.h"
 
@@ -40,6 +41,10 @@ namespace algospp {
 
 
 	public:
+
+		Graph* getGraphPtr() {
+			return &g;
+		}
 
 		void CreateBstGraph(int n) {
 			startNode = std::make_shared<BstNode>();
@@ -94,6 +99,39 @@ namespace algospp {
 			return TreeIsCorrectPathLength(node->left) && TreeIsCorrectPathLength(node->right);
 		}
 
+		bool ParenthesisTheoremHolds() {
+			return ParenthesisTheoremHoldsRec(startNode->left, startNode->pathLength, startNode->finishTime) && 
+				ParenthesisTheoremHoldsRec(startNode->right, startNode->pathLength, startNode->finishTime);
+		}
+
+		bool ParenthesisTheoremHoldsRec(std::shared_ptr<BstNode> s, unsigned long long parentStartTime, unsigned long long parentFinishTime) {
+			if (s == nullptr)
+				return true;
+
+			if (s->pathLength <= parentStartTime || s->finishTime >= parentFinishTime)
+				return false;
+
+			return ParenthesisTheoremHoldsRec(s->left, s->pathLength, s->finishTime) &&
+				ParenthesisTheoremHoldsRec(s->right, s->pathLength, s->finishTime);
+		}
+
+		bool AllBstNodesReached() {
+			return (AllBstNodesReachedRec(startNode));
+		}
+
+		bool AllBstNodesReachedRec(std::shared_ptr<BstNode> s) {
+			bool leftNodesReached = true, rightNodesreached = true;
+			if (s->left == nullptr && s->right == nullptr)
+				return s->marked;
+
+			if (s->left != nullptr)
+				leftNodesReached = AllBstNodesReachedRec(s->left);
+			if (s->right != nullptr)
+				rightNodesreached = AllBstNodesReachedRec(s->right);
+
+			return leftNodesReached && rightNodesreached;
+		}
+
 		void Clear() {
 			g.ClearGraph();
 		}
@@ -105,6 +143,24 @@ namespace algospp {
 		CreateBstGraph(1000);
 		BreadthFirstSearch();
 		EXPECT_TRUE(IsMinPathLength());
+	}
+
+	TEST_F(SearchTests, DFSParenthesisTest) {
+		CreateBstGraph(1000);
+		DepthFirstSearch();
+		EXPECT_TRUE(ParenthesisTheoremHolds());
+	}
+
+	TEST_F(SearchTests, DFSWhitePathTheoremTest) {
+		CreateBstGraph(1000);
+		DepthFirstSearch();
+		EXPECT_TRUE(AllBstNodesReached());
+	}
+
+	TEST_F(SearchTests, SCC_BST_Test) {
+		CreateBstGraph(1000);
+		std::vector<std::shared_ptr<LinkedListNode>> components = stronglyConnectedComponents(*getGraphPtr());
+		EXPECT_TRUE(components.size() == 1);
 	}
 
 	/*TEST_F(SearchTests, DFSTest) {

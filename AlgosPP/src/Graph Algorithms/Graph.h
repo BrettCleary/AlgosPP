@@ -12,6 +12,7 @@ struct Node{
     unsigned long long finishTime = -1;
     std::shared_ptr<Node> prevNode = nullptr;
     std::vector<std::shared_ptr<Node>> adjList;
+    std::vector<unsigned long long> adjIndices;
 };
 
 class Graph{
@@ -19,6 +20,12 @@ class Graph{
 
 
     public:
+
+    Graph(){}
+
+    Graph(std::vector<std::shared_ptr<Node>> v):vertices(v) {
+
+    }
 
     std::vector<std::shared_ptr<Node>>::iterator begin(){
         return vertices.begin();
@@ -50,7 +57,9 @@ class Graph{
         for (int v = 0; v < numVertices; ++v) {
             auto ptr = vertices[v];
             for (int i = 0; i < edgesPerVert; ++i) {
-                auto adjPtri = vertices[RandNum() % numVertices];
+                unsigned long long index = RandNum() % numVertices;
+                ptr->adjIndices.push_back(index);
+                auto adjPtri = vertices[index];
                 ptr->adjList.push_back(std::move(adjPtri));
             }
         }
@@ -63,6 +72,22 @@ class Graph{
             i->prevNode = nullptr;
             i->finishTime = -1;
         }
+    }
+
+    Graph CreateInvertedGraph() {
+        Graph invG(vertices);
+        for (int i = 0; i < vertices.size(); ++i) {
+            invG.vertices[i]->marked = false;
+            invG.vertices[i]->adjList.clear();
+            invG.vertices[i]->adjIndices.clear();
+        }
+        for (unsigned long long i = 0; i < vertices.size(); ++i) {
+            for (auto nodeIndex : vertices[i]->adjIndices) {
+                invG.vertices[nodeIndex]->adjIndices.push_back(i);
+                invG.vertices[nodeIndex]->adjList.push_back(vertices[i]);
+            }
+        }
+        return invG;
     }
 
     void ClearGraph(){
