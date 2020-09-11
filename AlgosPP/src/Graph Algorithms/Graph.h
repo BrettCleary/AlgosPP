@@ -8,12 +8,78 @@
 namespace algospp{
 struct Node{
     bool marked = false;
-    unsigned long long pathLength = -1;
-    unsigned long long finishTime = -1;
+    
+    //pathLength is discovery time in DFS
+    long long pathLength = LLONG_MAX; 
+    long long finishTime = LLONG_MAX;
+    long long sccIndex = LLONG_MAX;
     std::shared_ptr<Node> prevNode = nullptr;
     std::vector<std::shared_ptr<Node>> adjList;
     std::vector<unsigned long long> adjIndices;
 };
+
+struct NodeWeighted : Node {
+    long long key = LLONG_MAX;
+    std::vector<unsigned long long> edgeWeights;
+};
+
+struct LinkedListNode {
+    std::shared_ptr<LinkedListNode> PrevNode = nullptr;
+    std::shared_ptr<LinkedListNode> NextNode = nullptr;
+    std::shared_ptr<Node> NodePtr = nullptr;
+
+    LinkedListNode(std::shared_ptr<Node> nodePtr) : NodePtr(nodePtr) {}
+    LinkedListNode(const LinkedListNode& nodeToCopy) : PrevNode(nodeToCopy.PrevNode), NextNode(nodeToCopy.NextNode), NodePtr(nodeToCopy.NodePtr) {
+
+    }
+};
+
+class nodeWtdcomparisonKey {
+    bool reverse;
+public:
+    nodeWtdcomparison(const bool& revparam = false) {
+        reverse = revparam;
+    }
+
+    bool operator() (const NodeWeighted& lhs, const NodeWeighted& rhs) const {
+        if (reverse)
+            return lhs.key > rhs.key;
+        return lhs.key < rhs.key;
+    }
+};
+
+class nodeWtdcomparisonPathLength {
+    bool reverse;
+public:
+    nodeWtdcomparison(const bool& revparam = false) {
+        reverse = revparam;
+    }
+
+    bool operator() (const Node& lhs, const Node& rhs) const {
+        if (reverse)
+            return lhs.pathLength > rhs.pathLength;
+        return lhs.pathLength < rhs.pathLength;
+    }
+};
+
+void Relax(std::shared_ptr<NodeWeighted> u, std::shared_ptr<NodeWeighted> v, unsigned long long vAdjIndex) {
+    if (u == nullptr || v == nullptr)
+        throw;
+    long long possiblePathLengthV = u->pathLength + u->edgeWeights[vAdjIndex];
+    if (v->pathLength > possiblePathLengthV) {
+        v->pathLength = possiblePathLengthV;
+        v->prevNode = u;
+    }
+}
+
+void RelaxAdjacent(std::shared_ptr<Node> nodePtr) {
+    int numEdges = nodePtr->adjList.size();
+    auto uWtd = std::dynamic_pointer_cast<std::shared_ptr<NodeWeighted>>(nodePtr);
+    for (int i = 0; i < numEdges; ++i) {
+        auto vWtd = std::dynamic_pointer_cast<std::shared_ptr<NodeWeighted>>(uWtd->adjList[i]);
+        Relax(uWtd, vWtd, i);
+    }
+}
 
 class Graph{
     std::vector<std::shared_ptr<Node>> vertices;
@@ -23,23 +89,34 @@ class Graph{
 
     Graph(){}
 
-    Graph(std::vector<std::shared_ptr<Node>> v):vertices(v) {
+    Graph(const Graph& g) : vertices(g.vertices) {}
+    Graph(const Graph&& g) : vertices(g.vertices) {}
+
+    Graph(const std::vector<std::shared_ptr<Node>>& v):vertices(v) {
 
     }
 
-    std::vector<std::shared_ptr<Node>>::iterator begin(){
+    Graph(std::vector<std::shared_ptr<Node>>&& v) :vertices(v) {
+
+    }
+
+    Graph(unsigned long long numV, unsigned long long numE) {
+        CreateRandomGraph(numV, numE);
+    }
+
+    std::vector<std::shared_ptr<Node>>::iterator begin() const{
         return vertices.begin();
     }
     
-    std::vector<std::shared_ptr<Node>>::iterator end(){
+    std::vector<std::shared_ptr<Node>>::iterator end() const{
         return vertices.end();
     }
 
-    std::vector<std::shared_ptr<Node>>::size_type size() {
+    std::vector<std::shared_ptr<Node>>::size_type size() const{
         return vertices.size();
     }
 
-    std::shared_ptr<Node> operator [](int index){
+    std::shared_ptr<Node> operator [](int index) const{
         return vertices[index];
     }
 
@@ -47,7 +124,8 @@ class Graph{
         vertices.push_back(node);
     }
 
-    void CreateRandomGraph(int numVertices, int numEdges){
+    void CreateRandomGraph(unsigned long long numVertices, unsigned long long numEdges){
+        ClearGraph();
         int edgesPerVert = numEdges / numVertices + 1;
 
         for (int i = 0; i < numVertices; ++i) {
@@ -65,26 +143,47 @@ class Graph{
         }
     }
 
-    void ResetVertices(){
-        for (std::shared_ptr<Node> i : vertices){
-            i->marked = false;
-            i->pathLength = -1;
-            i->prevNode = nullptr;
-            i->finishTime = -1;
+    void ClearSccIndices() {
+        for (auto nodePtr : vertices) {
+            nodePtr->sccIndex = -1;
         }
     }
 
-    Graph CreateInvertedGraph() {
-        Graph invG(vertices);
-        for (int i = 0; i < vertices.size(); ++i) {
-            invG.vertices[i]->marked = false;
-            invG.vertices[i]->adjList.clear();
-            invG.vertices[i]->adjIndices.clear();
+    void ResetVertices(){
+        for (std::shared_ptr<Node> i : vertices){
+            i->marked = false;
+            i->pathLength = LLONG_MAX;
+            i->prevNode = nullptr;
+            i->finishTime = LLONG_MAX;
+            i->adjIndices.clear();
+            i->adjList.clear();
+            i->sccIndex = LLONG_MAX;
         }
-        for (unsigned long long i = 0; i < vertices.size(); ++i) {
-            for (auto nodeIndex : vertices[i]->adjIndices) {
-                invG.vertices[nodeIndex]->adjIndices.push_back(i);
-                invG.vertices[nodeIndex]->adjList.push_back(vertices[i]);
+    }
+
+    void InitSingleSource(std::shared_ptr<Node> source) {
+        for (std::shared_ptr<Node> i : vertices) {
+            i->pathLength = -1;
+            i->prevNode = nullptr;
+        }
+        source->pathLength = 0;
+        source->prevNode = nullptr;
+    }
+
+    //adjListIndices must be set to invert
+    Graph InvertGraph() {
+        std::vector<std::vector<unsigned long long>> allAdjListIndices;
+
+        for (std::shared_ptr<Node> adjListIndices : vertices) {
+            allAdjListIndices.push_back(adjListIndices->adjIndices);
+        }
+
+        ResetVertices();
+
+        for (unsigned long long i = 0; i < allAdjListIndices.size(); ++i) {
+            for (auto nodeIndex : allAdjListIndices[i]) {
+                vertices[nodeIndex]->adjIndices.push_back(i);
+                vertices[nodeIndex]->adjList.push_back(vertices[i]);
             }
         }
         return invG;
@@ -95,5 +194,4 @@ class Graph{
     }
 };
 }//algospp
-
 #endif//ALGOSPP_SRC_GRAPH_GRAPH_H_

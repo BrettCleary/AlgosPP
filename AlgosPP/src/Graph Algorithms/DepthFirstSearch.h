@@ -2,28 +2,20 @@
 #define ALGOSPP_SRC_GRAPH_DEPTHFIRSTSEARCH_H_
 
 #include "Graph.h"
+#include <unordered_set>
 
 namespace algospp {
 
-struct LinkedListNode {
-	std::shared_ptr<LinkedListNode> PrevNode = nullptr;
-	std::shared_ptr<LinkedListNode> NextNode = nullptr;
-	std::shared_ptr<Node> NodePtr = nullptr;
-
-	LinkedListNode(std::shared_ptr<Node> nodePtr) : NodePtr(nodePtr) {}
-	LinkedListNode(const LinkedListNode& nodeToCopy) : PrevNode(nodeToCopy.PrevNode), NextNode(nodeToCopy.NextNode), NodePtr(nodeToCopy.NodePtr) {
-
-	}
-};
-
-void dfsVisit(Graph g, std::shared_ptr<Node> u, unsigned long long& time, std::shared_ptr<LinkedListNode> frontNode = nullptr) {
+void dfsVisit(std::shared_ptr<Node> u, long long& time, std::shared_ptr<LinkedListNode> frontNode = nullptr, 
+	long long sccIndex = LLONG_MAX) {
 	u->pathLength = ++time;
 	u->marked = true;
+	u->sccIndex = sccIndex;
 
 	for (auto iter = u->adjList.begin(); iter != u->adjList.end(); ++iter) {
 		if (!(*iter)->marked) {
 			(*iter)->prevNode = u;
-			dfsVisit(g, (*iter), time, frontNode);
+			dfsVisit((*iter), time, sccIndex, frontNode);
 		}
 	}
 	u->finishTime = ++time;
@@ -36,11 +28,12 @@ void dfsVisit(Graph g, std::shared_ptr<Node> u, unsigned long long& time, std::s
 }
 
 //assumes a cleared graph as input
-void dfs(Graph g) {
-	unsigned long long time = 0;
+void dfs(const Graph& g) {
+	long long time = 0;
+	std::unordered_set<std::shared_ptr<Node>> visitedNodes;
 	for (auto iter = g.begin(); iter != g.end(); ++iter) {
 		if (!(*iter)->marked)
-			dfsVisit(g, *iter, time);
+			dfsVisit(*iter, time, visitedNodes);
 	}
 }
 
