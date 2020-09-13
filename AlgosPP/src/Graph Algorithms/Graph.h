@@ -20,7 +20,7 @@ struct Node{
 
 struct NodeWeighted : Node {
     long long key = LLONG_MAX;
-    std::vector<unsigned long long> edgeWeights;
+    std::vector<long long> edgeWeights;
 };
 
 struct LinkedListNode {
@@ -37,7 +37,7 @@ struct LinkedListNode {
 class nodeWtdcomparisonKey {
     bool reverse;
 public:
-    nodeWtdcomparison(const bool& revparam = false) {
+    nodeWtdcomparisonKey(const bool& revparam = false) {
         reverse = revparam;
     }
 
@@ -51,7 +51,7 @@ public:
 class nodeWtdcomparisonPathLength {
     bool reverse;
 public:
-    nodeWtdcomparison(const bool& revparam = false) {
+    nodeWtdcomparisonPathLength(const bool& revparam = false) {
         reverse = revparam;
     }
 
@@ -74,9 +74,9 @@ void Relax(std::shared_ptr<NodeWeighted> u, std::shared_ptr<NodeWeighted> v, uns
 
 void RelaxAdjacent(std::shared_ptr<Node> nodePtr) {
     int numEdges = nodePtr->adjList.size();
-    auto uWtd = std::dynamic_pointer_cast<std::shared_ptr<NodeWeighted>>(nodePtr);
+    std::shared_ptr<NodeWeighted> uWtd = std::dynamic_pointer_cast<NodeWeighted>(nodePtr);
     for (int i = 0; i < numEdges; ++i) {
-        auto vWtd = std::dynamic_pointer_cast<std::shared_ptr<NodeWeighted>>(uWtd->adjList[i]);
+        auto vWtd = std::dynamic_pointer_cast<NodeWeighted>(uWtd->adjList[i]);
         Relax(uWtd, vWtd, i);
     }
 }
@@ -84,8 +84,8 @@ void RelaxAdjacent(std::shared_ptr<Node> nodePtr) {
 class Graph{
     std::vector<std::shared_ptr<Node>> vertices;
 
-
     public:
+    std::shared_ptr<std::vector<std::vector<unsigned long long>>> adjMatrix = nullptr;
 
     Graph(){}
 
@@ -104,20 +104,24 @@ class Graph{
         CreateRandomGraph(numV, numE);
     }
 
-    std::vector<std::shared_ptr<Node>>::iterator begin() const{
+    std::vector<std::shared_ptr<Node>>::iterator begin(){
         return vertices.begin();
     }
     
-    std::vector<std::shared_ptr<Node>>::iterator end() const{
+    std::vector<std::shared_ptr<Node>>::iterator end(){
         return vertices.end();
     }
 
-    std::vector<std::shared_ptr<Node>>::size_type size() const{
+    std::vector<std::shared_ptr<Node>>::size_type size(){
         return vertices.size();
     }
 
-    std::shared_ptr<Node> operator [](int index) const{
+    std::shared_ptr<Node> operator [](int index){
         return vertices[index];
+    }
+
+    std::vector<std::shared_ptr<Node>>::iterator erase(std::vector<std::shared_ptr<Node>>::iterator pos) {
+        return vertices.erase(pos);
     }
 
     void push_back(std::shared_ptr<Node> node) {
@@ -171,7 +175,7 @@ class Graph{
     }
 
     //adjListIndices must be set to invert
-    Graph InvertGraph() {
+    void InvertGraph() {
         std::vector<std::vector<unsigned long long>> allAdjListIndices;
 
         for (std::shared_ptr<Node> adjListIndices : vertices) {
@@ -186,7 +190,6 @@ class Graph{
                 vertices[nodeIndex]->adjList.push_back(vertices[i]);
             }
         }
-        return invG;
     }
 
     void ClearGraph(){

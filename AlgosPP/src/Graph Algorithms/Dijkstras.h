@@ -6,6 +6,7 @@
 
 namespace algospp {
 
+//weights assumed to be nonnegative
 void Dijkstras(Graph& g, std::shared_ptr<Node> source) {
 	g.InitSingleSource(source);
 
@@ -28,5 +29,4 @@ void Dijkstras(Graph& g, std::shared_ptr<Node> source) {
 	}
 }
 }//algospp
-
 #endif//ALGOSPP_SRC_GRAPH_DIJKSTRAS_H_
