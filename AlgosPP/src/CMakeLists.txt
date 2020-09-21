@@ -1,4 +1,4 @@
-add_library(AlgosPPDataStructures STATIC "Data Structures/VanEmdeBoasTree.h" "Data Structures/VanEmdeBoasTree.cpp")
+add_library(AlgosPPDataStructures STATIC "Data Structures/VanEmdeBoasTree.h" "Data Structures/VanEmdeBoasTree.cpp" "Data Structures/FibonacciHeap.h" "Data Structures/FibonacciHeap.cpp")
 set_target_properties(AlgosPPDataStructures PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(AlgosPPDataStructures PROPERTIES VERSION "1.0.0")
 set_target_properties(AlgosPPDataStructures PROPERTIES SOVERSION "1")

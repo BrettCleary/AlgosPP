@@ -1,4 +1,4 @@
-add_executable(VebTests "Data Structures/VebTreeTests.cpp")
+add_executable(VebTests "Data Structures/VebTreeTests.cpp" "Data Structures/FibHeapTests.cpp")
 target_link_libraries(VebTests PRIVATE gtest_main AlgosPPDataStructures)
 SET_TARGET_PROPERTIES(VebTests PROPERTIES LINK_FLAGS "/PROFILE")
 
