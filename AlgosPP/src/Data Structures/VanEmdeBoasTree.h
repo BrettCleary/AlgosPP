@@ -1,4 +1,3 @@
-
 #ifndef ALGOSPP_DS_VEBTREE_H_
 #define ALGOSPP_DS_VEBTREE_H_
 

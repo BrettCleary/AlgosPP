@@ -1,15 +1,20 @@
+
 add_executable(VebTests "Data Structures/VebTreeTests.cpp" "Data Structures/FibHeapTests.cpp")
 target_link_libraries(VebTests PRIVATE gtest_main AlgosPPDataStructures)
 SET_TARGET_PROPERTIES(VebTests PROPERTIES LINK_FLAGS "/PROFILE")
 
+#[[
 add_executable(SortTests "Sorting/SortTests.cpp")
 target_link_libraries(SortTests PRIVATE gtest_main AlgosPPSorting)
 SET_TARGET_PROPERTIES(SortTests PROPERTIES LINK_FLAGS "/PROFILE")
-
+]]
+#[[
 add_executable(GraphBstTests "Graph Algorithms/BstTests.cpp")
 target_link_libraries(GraphBstTests PRIVATE gtest_main AlgosPPGraph)
 SET_TARGET_PROPERTIES(GraphBstTests PROPERTIES LINK_FLAGS "/PROFILE")
-
+]]
+#[[
 add_executable(DirGraphTests "Graph Algorithms/DirGraphRandomTests.cpp")
 target_link_libraries(DirGraphTests PRIVATE gtest_main AlgosPPGraph)
 SET_TARGET_PROPERTIES(DirGraphTests PROPERTIES LINK_FLAGS "/PROFILE")
+]]

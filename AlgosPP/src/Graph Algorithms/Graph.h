@@ -71,12 +71,11 @@ void Relax(std::shared_ptr<NodeWeighted> u, std::shared_ptr<NodeWeighted> v, uns
         v->prevNode = u;
     }
 }
-
 void RelaxAdjacent(std::shared_ptr<Node> nodePtr) {
     int numEdges = nodePtr->adjList.size();
-    std::shared_ptr<NodeWeighted> uWtd = std::dynamic_pointer_cast<NodeWeighted>(nodePtr);
+    std::shared_ptr<NodeWeighted> uWtd = std::static_pointer_cast<NodeWeighted>(nodePtr);
     for (int i = 0; i < numEdges; ++i) {
-        auto vWtd = std::dynamic_pointer_cast<NodeWeighted>(uWtd->adjList[i]);
+        auto vWtd = std::static_pointer_cast<NodeWeighted>(uWtd->adjList[i]);
         Relax(uWtd, vWtd, i);
     }
 }

@@ -241,7 +241,7 @@ TEST_F(VanEmdeBoasTreeTest, RandomDeleteTest) {
 	EXPECT_TRUE(SearchCheck());
 }
 	
-TEST_F(VanEmdeBoasTreeTest, InsertSearchProfileTest) {
+/*TEST_F(VanEmdeBoasTreeTest, InsertSearchProfileTest) {
 	int uBits = 20;
 
 	std::cout << "\n" << std::endl;
@@ -260,7 +260,7 @@ TEST_F(VanEmdeBoasTreeTest, InsertSearchProfileTest) {
 		std::cout << std::endl;
 	}
 	std::cout << "\n" << std::endl;
-}
+}*/
 
 class MapTest : public ::testing::Test {
 	std::map<int, std::shared_ptr<DataNode>> testMap;
@@ -335,7 +335,7 @@ public:
 
 };
 
-TEST_F(MapTest, InsertSearchMapTest) {
+/*TEST_F(MapTest, InsertSearchMapTest) {
 	std::cout << "\n" << std::endl;
 	for (int i = 1; i < 10; ++i) {
 		std::cout << "INSERTING/SEARCHING FOR 10^ " << i << " ELEMENTS: " << "\n" << std::endl;
@@ -349,7 +349,7 @@ TEST_F(MapTest, InsertSearchMapTest) {
 		std::cout << std::endl;
 	}
 	std::cout << "\n" << std::endl;
-}
+}*/
 
 /*
 TEST(MapBenchmarking, InsertMapTest) {

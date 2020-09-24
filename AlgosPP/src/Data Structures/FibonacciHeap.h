@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
+#include <iostream>
 
 #include "..\Graph Algorithms\Graph.h"
 
@@ -26,9 +27,15 @@ struct DoublyLinkedNode {
 
 class FibHeap {
 
+	std::shared_ptr<DoublyLinkedNode> min = nullptr;
+	unsigned long long n = 0;
+	long long rootListSize = 0;
+
+
 	void removeNodeFromRootList(std::shared_ptr<DoublyLinkedNode> node) {
 		node->next->prev = node->prev;
 		node->prev->next = node->next;
+		--rootListSize;
 	}
 
 	//lists are the same afterwards, min ptrs for each heap not changed
@@ -52,16 +59,23 @@ class FibHeap {
 		nodeInList->next = nodeToInsert;
 		nodeToInsert->prev = nodeInList;
 		nodeToInsert->next = tempMinNext;
+		tempMinNext->prev = nodeToInsert;
 		nodeToInsert->parent = nodeInList->parent;
+		if (nodeInList == nodeInList->prev)
+			nodeInList->prev = nodeToInsert;
 		if (nodeInList->parent != nullptr)
-			++nodeInList->parent->degree;
+			++(nodeInList->parent->degree);
 	}
 
 	void consolidate() {
+		if (min->next == min || min->prev == min)
+			return;
 		//get unique nodes for each node in the root list
 		std::unordered_map<int, std::shared_ptr<DoublyLinkedNode>> degreeSet;
 		auto rootList_i = min;
-		while ((rootList_i != nullptr) && (rootList_i != min)) {
+		//bool minNotConsolidated = true;
+		long long rootIndex = rootListSize;
+		while ((rootList_i != nullptr) && --rootIndex >= 0){//rootList_i != min || minNotConsolidated)) {
 			std::shared_ptr<DoublyLinkedNode> x = rootList_i;
 			auto d = x->degree;
 			while (degreeSet.find(d) != degreeSet.end()) {
@@ -76,25 +90,40 @@ class FibHeap {
 				++d;
 			}
 			degreeSet[d] = x;
-			rootList_i = rootList_i->next;
+			rootList_i = x->next;
+			//minNotConsolidated = false;
 		}
 
 		//create new root list
 		min = nullptr;
 		for (auto& degreeSet_i : degreeSet) {
+			degreeSet_i.second->parent = nullptr;
 			insert(degreeSet_i.second);
 			--n;
+			--rootListSize;
 		}
 	}
 
 	//x and y are in root list, makes y child of x
 	void heapLink(std::shared_ptr<DoublyLinkedNode> y, std::shared_ptr<DoublyLinkedNode> x) {
 		removeNodeFromRootList(y);
-		insertInto(y, x->child);
+		if (x->child == nullptr) {
+			x->child = y;
+			y->parent = x;
+			++(x->degree);
+			y->next = y;
+			y->prev = y;
+		}
+		else
+			insertInto(y, x->child);
 		y->mark = false;
 	}
 	
 	void cut(std::shared_ptr<DoublyLinkedNode> yChild, std::shared_ptr<DoublyLinkedNode> y) {
+		if (yChild->next == yChild || yChild->prev == yChild)
+			y->child = nullptr;
+		else if (yChild == y->child)
+			y->child = yChild->next;
 		//remove from y child list
 		yChild->next->prev = yChild->prev;
 		yChild->prev->next = yChild->next;
@@ -117,8 +146,7 @@ class FibHeap {
 		}
 	}
 
-	std::shared_ptr<DoublyLinkedNode> min = nullptr;
-	unsigned long long n = 0;
+	
 
 public:
 	void insert(std::shared_ptr<DoublyLinkedNode> node) {
@@ -133,9 +161,10 @@ public:
 				min = node;
 		}
 		++n;
+		++rootListSize;
 	}
 
-	std::shared_ptr<DoublyLinkedNode> min() {
+	std::shared_ptr<DoublyLinkedNode> minNode() {
 		return min;
 	}
 
@@ -154,15 +183,19 @@ public:
 			return nullptr;
 
 		auto minChild = min->child;
-		auto minChild_i = minChild;
-		while ((minChild_i != nullptr) && (minChild_i != minChild)) {
+		auto minChild_i = minChild != nullptr ? minChild : nullptr;
+		bool minChildCut = false;
+		while (	minChild_i != nullptr && 
+				(minChild_i != minChild ||
+				!minChildCut)) {
+			minChildCut = true;
 			minChild_i->parent = nullptr;
 			minChild_i = minChild_i->next;
 		}
 		concatenateLinkedLists(min->child, min);
 		auto extractedMin = min;
 		removeNodeFromRootList(min);
-		if (min = min->next)
+		if (min == min->next)
 			min = nullptr;
 		else {
 			min = min->next;
@@ -176,6 +209,10 @@ public:
 	}
 
 	void decreaseKey(std::shared_ptr<DoublyLinkedNode> x, long long newKey) {
+		if (min == nullptr) {
+			std::cout << "Fib heap is empty. Cannot decrease key." << std::endl;
+			throw;
+		}
 		if (newKey > x->key)
 			throw;
 
