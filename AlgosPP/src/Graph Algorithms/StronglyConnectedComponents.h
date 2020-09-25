@@ -2,30 +2,31 @@
 #define ALGOSPP_SRC_GRAPH_STRONGLYCONNECTEDCOMPONENTS_H_
 #include "Graph.h"
 
-
 namespace algospp {
 //returns a representative node for each strongly connected component
 std::vector<std::shared_ptr<LinkedListNode>> stronglyConnectedComponents(Graph& g) {
-	std::vector<std::shared_ptr<LinkedListNode>> finishTimeList = topologicalSort(g);
+	//linked list starts with highest finish time node (finishTimeList)
+	//and monotonically decreases through the end of the linked list
+	std::shared_ptr<LinkedListNode> finishTimeList = topologicalSort(g);
 	g.InvertGraph();
 
 	std::vector<std::shared_ptr<LinkedListNode>> sccVertices;
 
-	for (std::shared_ptr<LinkedListNode> node_i : finishTimeList) {
-		if (node_i->NodePtr->marked)
-			continue;
-
+	auto node_i = finishTimeList;
+	while (node_i != nullptr && !node_i->NodePtr->marked) {
 		//max finish time that has not been visited is used as the representative vertice from its strongly connected component
 		sccVertices.push_back(node_i);
-		unsigned long long time = 0;
+		long long time = 0;
 		dfsVisit(node_i->NodePtr, time);
+		node_i = node_i->NextNode;
 	}
 	//restore original graph
 	g.InvertGraph();
+	//Linked List Nodes from separate strongly connected components in original graph
 	return sccVertices;
 }
 namespace {
-	Graph createReducedGraph(const Graph& g, unsigned long long numSccComponents) {
+	Graph createReducedGraph(Graph& g, unsigned long long numSccComponents) {
 		//this will be used to instantiate the new graph
 		std::vector<std::shared_ptr<Node>> reducedVertices;
 
@@ -36,7 +37,7 @@ namespace {
 
 		//adding edges to the new reduced graph
 		for (auto vertIter = g.begin(); vertIter < g.end(); ++vertIter) {
-			for (std::shared_ptr<Node> connectedVert : (*vertiter)->adjList) {
+			for (std::shared_ptr<Node> connectedVert : (*vertIter)->adjList) {
 				unsigned long long vertSccIndex = (*vertIter)->sccIndex;
 				unsigned long long connectedSccIndex = connectedVert->sccIndex;
 				if (vertSccIndex == connectedSccIndex) {
@@ -55,17 +56,16 @@ namespace {
 } //unnamed namespace
 
 Graph sccReducedGraph(Graph& g) {
-	unsigned long long i = 0;
-	std::vector<std::shared_ptr<LinkedListNode>> finishTimeList = topologicalSort(g);
+	long long i = 0;
+	std::shared_ptr<LinkedListNode> finishTimeList = topologicalSort(g);
 	g.InvertGraph();
-	for (std::shared_ptr<LinkedListNode> node_i : finishTimeList) {
-		if (node_i->NodePtr->marked)
-			continue;
-
+	auto node_i = finishTimeList;
+	while (node_i != nullptr && !node_i->NodePtr->marked) {
 		//max finish time that has not been visited is used as the representative vertice from its strongly connected component
-		unsigned long long time = 0;
+		long long time = 0;
 		dfsVisit(node_i->NodePtr, time, nullptr, i);
 		++i;
+		node_i = node_i->NextNode;
 	}
 	//restore original graph
 	g.InvertGraph();

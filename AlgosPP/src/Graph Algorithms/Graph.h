@@ -41,10 +41,10 @@ public:
         reverse = revparam;
     }
 
-    bool operator() (const NodeWeighted& lhs, const NodeWeighted& rhs) const {
+    bool operator() (const std::shared_ptr<NodeWeighted>& lhs, const std::shared_ptr<NodeWeighted>& rhs) const {
         if (reverse)
-            return lhs.key > rhs.key;
-        return lhs.key < rhs.key;
+            return lhs->key > rhs->key;
+        return lhs->key < rhs->key;
     }
 };
 
@@ -71,6 +71,7 @@ void Relax(std::shared_ptr<NodeWeighted> u, std::shared_ptr<NodeWeighted> v, uns
         v->prevNode = u;
     }
 }
+
 void RelaxAdjacent(std::shared_ptr<Node> nodePtr) {
     int numEdges = nodePtr->adjList.size();
     std::shared_ptr<NodeWeighted> uWtd = std::static_pointer_cast<NodeWeighted>(nodePtr);
@@ -99,8 +100,11 @@ class Graph{
 
     }
 
-    Graph(unsigned long long numV, unsigned long long numE) {
-        CreateRandomGraph(numV, numE);
+    Graph(unsigned long long numV, unsigned long long numE, bool isDir = true) {
+        if (isDir)
+            CreateRandomGraph(numV, numE);
+        else
+            CreateRandomUnDirWtdGraph(numV, numE);
     }
 
     std::vector<std::shared_ptr<Node>>::iterator begin(){
@@ -132,16 +136,46 @@ class Graph{
         int edgesPerVert = numEdges / numVertices + 1;
 
         for (int i = 0; i < numVertices; ++i) {
-            auto ptr = std::make_shared<Node>(Node());
+            auto ptr = std::make_shared<NodeWeighted>();
             vertices.push_back(std::move(ptr));
         }
         for (int v = 0; v < numVertices; ++v) {
-            auto ptr = vertices[v];
+            auto ptr = std::static_pointer_cast<NodeWeighted>(vertices[v]);
             for (int i = 0; i < edgesPerVert; ++i) {
                 unsigned long long index = RandNum() % numVertices;
                 ptr->adjIndices.push_back(index);
                 auto adjPtri = vertices[index];
                 ptr->adjList.push_back(std::move(adjPtri));
+                ptr->edgeWeights.push_back(1);
+            }
+        }
+    }
+
+    void CreateRandomUnDirWtdGraph(unsigned long long numVertices, unsigned long long numEdges) {
+        ClearGraph();
+        int edgesPerVert = numEdges / numVertices + 1;
+
+        for (int i = 0; i < numVertices; ++i) {
+            auto ptr = std::make_shared<NodeWeighted>();
+            vertices.push_back(std::move(ptr));
+        }
+        for (int v = 0; v < numVertices; ++v) {
+            auto ptr = std::static_pointer_cast<NodeWeighted>(vertices[v]);
+            for (int i = 0; i < edgesPerVert; ++i) {
+                unsigned long long index = RandNum() % numVertices;
+                if (index <= v) {
+                    continue;
+                }
+                ptr->adjIndices.push_back(index);
+                auto adjPtri = vertices[index];
+                ptr->adjList.push_back(std::move(adjPtri));
+                auto edgeW = rand() % 100 + 1;
+                ptr->edgeWeights.push_back(edgeW);
+
+                auto adjPtr = std::static_pointer_cast<NodeWeighted>(vertices[index]);
+                adjPtr->adjList.push_back(ptr);
+                adjPtr->adjIndices.push_back(v);
+                adjPtr->edgeWeights.push_back(edgeW);
             }
         }
     }
@@ -166,7 +200,7 @@ class Graph{
 
     void InitSingleSource(std::shared_ptr<Node> source) {
         for (std::shared_ptr<Node> i : vertices) {
-            i->pathLength = -1;
+            i->pathLength = LLONG_MAX;
             i->prevNode = nullptr;
         }
         source->pathLength = 0;

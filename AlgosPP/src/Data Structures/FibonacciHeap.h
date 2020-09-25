@@ -6,10 +6,25 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <iostream>
+#include <exception>
 
 #include "..\Graph Algorithms\Graph.h"
 
 namespace algospp {
+
+class myexception : public std::exception
+{
+	std::string explanation;
+public:
+	myexception(std::string whatHappened) : explanation(whatHappened) {
+
+	}
+
+	virtual const char* what() const throw()
+	{
+		return "My exception happened";
+	}
+};
 
 struct DoublyLinkedNode {
 
@@ -76,6 +91,7 @@ class FibHeap {
 		//bool minNotConsolidated = true;
 		long long rootIndex = rootListSize;
 		while ((rootList_i != nullptr) && --rootIndex >= 0){//rootList_i != min || minNotConsolidated)) {
+			auto rootList_iNext = rootList_i->next;
 			std::shared_ptr<DoublyLinkedNode> x = rootList_i;
 			auto d = x->degree;
 			while (degreeSet.find(d) != degreeSet.end()) {
@@ -85,12 +101,12 @@ class FibHeap {
 					x = y;
 					y = temp;
 				}
-				heapLink(y, x);
+				heapLink(y, x);				
 				degreeSet.erase(degreeSet.find(d));
 				++d;
 			}
 			degreeSet[d] = x;
-			rootList_i = x->next;
+			rootList_i = rootList_iNext;
 			//minNotConsolidated = false;
 		}
 
@@ -130,6 +146,7 @@ class FibHeap {
 		--y->degree;
 		//insert into root list
 		insert(yChild);
+		--n;
 		yChild->parent = nullptr;
 		yChild->mark = false;
 	}
@@ -146,7 +163,16 @@ class FibHeap {
 		}
 	}
 
-	
+	void printNodeList(std::shared_ptr<DoublyLinkedNode> node) {
+		bool nodePrinted = false;
+		auto node_i = node;
+		std::cout << "printing node" << std::endl;
+		while (node_i != nullptr && (node_i != node || !nodePrinted)) {
+			nodePrinted = true;
+			std::cout << node_i->key << std::endl;
+			node_i = node_i->next;
+		}
+	}
 
 public:
 	void insert(std::shared_ptr<DoublyLinkedNode> node) {
@@ -163,6 +189,7 @@ public:
 		++n;
 		++rootListSize;
 	}
+
 
 	std::shared_ptr<DoublyLinkedNode> minNode() {
 		return min;
@@ -193,6 +220,7 @@ public:
 			minChild_i = minChild_i->next;
 		}
 		concatenateLinkedLists(min->child, min);
+		rootListSize += min->degree;
 		auto extractedMin = min;
 		removeNodeFromRootList(min);
 		if (min == min->next)
@@ -211,10 +239,10 @@ public:
 	void decreaseKey(std::shared_ptr<DoublyLinkedNode> x, long long newKey) {
 		if (min == nullptr) {
 			std::cout << "Fib heap is empty. Cannot decrease key." << std::endl;
-			throw;
+			throw myexception("Fib heap is empty. Cannot decrease key.");
 		}
 		if (newKey > x->key)
-			throw;
+			throw myexception("newKey is greater than key to be decreased");
 
 		x->key = newKey;
 		auto y = x->parent;

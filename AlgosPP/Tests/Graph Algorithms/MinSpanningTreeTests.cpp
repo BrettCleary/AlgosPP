@@ -3,7 +3,7 @@
 #include "../../src/Graph Algorithms/Graph.h"
 #include "../../src/Graph Algorithms/TopologicalSort.h"
 #include "../../src/Graph Algorithms/StronglyConnectedComponents.h"
-#include "../../src/Graph Algorithms/BellmanFord.h"
+#include "../../src/Graph Algorithms/PrimsMST.h"
 
 #include "gtest/gtest.h"
 
@@ -43,7 +43,6 @@ protected:
 
 	}
 
-	
 public:
 
 	void CreateRandomDirGraph(unsigned long long numVertices, unsigned long long numEdges) {
@@ -52,52 +51,45 @@ public:
 		g = new Graph(numVertices, numEdges);
 	}
 
-	bool SccIsRepeatable() {
-		Graph gOne = sccReducedGraph(*g);
-		Graph gSecond = sccReducedGraph(gOne);
-		if (gOne.size() == gSecond.size())
-			return true;
-		else
-			return false;
+	void CreateRandomUndirWtdGraph(unsigned long long numVertices, unsigned long long numEdges) {
+		if (g != nullptr)
+			delete g;
+		g = new Graph(numVertices, numEdges, false);
 	}
 
-	/*bool SccIsCorrect() {
-		//check if any edges create a cycle with ssp algo
-		Graph gRed = sccReducedGraph(g);
-		if (gRed.size() != sccRepNodes.size())
+	//assumes connected undir wtd graph
+	bool MSTIsRepeatable() {
+		if (g == nullptr)
 			return false;
-
+		std::shared_ptr<NodeWeighted> g_0 = std::static_pointer_cast<NodeWeighted>((*g)[0]);
+		unsigned long long spanTreeWeight = MST_Weight_Prim(*g, g_0);
+		for (auto iter = g->begin(); iter != g->end(); ++iter) {
+			std::shared_ptr<NodeWeighted> g_i = std::static_pointer_cast<NodeWeighted>(*iter);
+			auto treeWeight_i = MST_Weight_Prim(*g, g_i);
+			if (spanTreeWeight != treeWeight_i)
+				return false;
+		}
 		return true;
-	}*/
+	}
 
-	bool SccNoCycles() {
+	/*bool NoCycles() {
 		Graph gReduced = sccReducedGraph(*g);
 		bool noCycles = true;
 		for (auto iter = g->begin(); iter != g->end(); ++iter) {
 			noCycles = noCycles && BellmanFord(gReduced, *iter);
 		}
 		return noCycles;
-	}
+	}*/
 };
 
-
-TEST_F(DirGraph, SCC_RepeatableTest) {
-	for (int i = 0; i < 4; ++i) {
-		CreateRandomDirGraph(pow(10,i), pow(10, i));
-		EXPECT_TRUE(SccIsRepeatable());
-	}
-}
-
-//Dependent on BellmanFord being correct
-TEST_F(DirGraph, SCC_NoCyclesTest) {
-	for (int i = 0; i < 4; ++i) {
-		CreateRandomDirGraph(pow(10, i), pow(10, i));
-		EXPECT_TRUE(SccNoCycles());
-	}
-}
-
-/*TEST_F(DirGraph, SCC_CorrectTest) {
-	CreateRandomDirGraph(100, 100);
+/*TEST_F(DirGraph, MST_NoCyclesTest) {
+	CreateRandomDirGraph(pow(10, 2), pow(10, 2));
+	EXPECT_TRUE(NoCycles());
 
 }*/
+
+TEST_F(DirGraph, MST_RepeatableTest) {
+	CreateRandomUndirWtdGraph(pow(10, 2), pow(10, 2));
+	EXPECT_TRUE(MSTIsRepeatable());
+}
 }//algospp

@@ -2,6 +2,7 @@
 #include "../../src/Graph Algorithms/DepthFirstSearch.h"
 #include "../../src/Graph Algorithms/Graph.h"
 #include "../../src/Graph Algorithms/TopologicalSort.h"
+#include "../../src/Graph Algorithms/StronglyConnectedComponents.h"
 
 #include "gtest/gtest.h"
 
@@ -162,9 +163,4 @@ TEST_F(BstTests, SCC_BST_Test) {
 	std::vector<std::shared_ptr<LinkedListNode>> components = stronglyConnectedComponents(*getGraphPtr());
 	EXPECT_TRUE(components.size() == 1);
 }
-
-/*TEST_F(BstTests, DFSTest) {
-
-}*/
-
 }//algospp
