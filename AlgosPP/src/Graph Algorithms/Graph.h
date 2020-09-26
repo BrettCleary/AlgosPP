@@ -23,6 +23,25 @@ struct NodeWeighted : Node {
     std::vector<long long> edgeWeights;
 };
 
+struct DoublyLinkedNode;
+struct NodeDL : NodeWeighted {
+    std::shared_ptr<DoublyLinkedNode> heapNode = nullptr;
+};
+
+struct DoublyLinkedNode {
+
+    std::shared_ptr<NodeDL> node;
+    long long key = LLONG_MAX;
+
+    std::shared_ptr<DoublyLinkedNode> next = nullptr;
+    std::shared_ptr<DoublyLinkedNode> prev = nullptr;
+    std::shared_ptr<DoublyLinkedNode> parent = nullptr;
+    std::shared_ptr<DoublyLinkedNode> child = nullptr;
+    bool mark = false;
+    unsigned long long degree = 0;
+
+};
+
 struct LinkedListNode {
     std::shared_ptr<LinkedListNode> PrevNode = nullptr;
     std::shared_ptr<LinkedListNode> NextNode = nullptr;
@@ -65,7 +84,12 @@ public:
 void Relax(std::shared_ptr<NodeWeighted> u, std::shared_ptr<NodeWeighted> v, unsigned long long vAdjIndex) {
     if (u == nullptr || v == nullptr)
         throw;
-    long long possiblePathLengthV = u->pathLength + u->edgeWeights[vAdjIndex];
+    long long possiblePathLengthV = LLONG_MAX;
+    //check that pathLength won't overflow positive or negative
+    if ((u->edgeWeights[vAdjIndex] > 0 && u->pathLength < LLONG_MAX - u->edgeWeights[vAdjIndex]) ||
+        (u->edgeWeights[vAdjIndex] < 0 && u->pathLength > LLONG_MIN - u->edgeWeights[vAdjIndex]))
+        possiblePathLengthV = u->pathLength + u->edgeWeights[vAdjIndex];
+
     if (v->pathLength > possiblePathLengthV) {
         v->pathLength = possiblePathLengthV;
         v->prevNode = u;
@@ -91,18 +115,12 @@ class Graph{
 
     Graph(const Graph& g) : vertices(g.vertices) {}
     Graph(const Graph&& g) : vertices(g.vertices) {}
+    Graph(const std::vector<std::shared_ptr<Node>>& v):vertices(v) {}
+    Graph(std::vector<std::shared_ptr<Node>>&& v) :vertices(v) {}
 
-    Graph(const std::vector<std::shared_ptr<Node>>& v):vertices(v) {
-
-    }
-
-    Graph(std::vector<std::shared_ptr<Node>>&& v) :vertices(v) {
-
-    }
-
-    Graph(unsigned long long numV, unsigned long long numE, bool isDir = true) {
+    Graph(unsigned long long numV, unsigned long long numE, bool isDir = true, bool useRandWeights = false) {
         if (isDir)
-            CreateRandomGraph(numV, numE);
+            CreateRandomGraph(numV, numE, useRandWeights);
         else
             CreateRandomUnDirWtdGraph(numV, numE);
     }
@@ -131,22 +149,25 @@ class Graph{
         vertices.push_back(node);
     }
 
-    void CreateRandomGraph(unsigned long long numVertices, unsigned long long numEdges){
+    void CreateRandomGraph(unsigned long long numVertices, unsigned long long numEdges, bool randomWeights = false){
         ClearGraph();
         int edgesPerVert = numEdges / numVertices + 1;
 
         for (int i = 0; i < numVertices; ++i) {
-            auto ptr = std::make_shared<NodeWeighted>();
+            auto ptr = std::make_shared<NodeDL>();
             vertices.push_back(std::move(ptr));
         }
         for (int v = 0; v < numVertices; ++v) {
-            auto ptr = std::static_pointer_cast<NodeWeighted>(vertices[v]);
+            auto ptr = std::static_pointer_cast<NodeDL>(vertices[v]);
             for (int i = 0; i < edgesPerVert; ++i) {
                 unsigned long long index = RandNum() % numVertices;
                 ptr->adjIndices.push_back(index);
                 auto adjPtri = vertices[index];
                 ptr->adjList.push_back(std::move(adjPtri));
-                ptr->edgeWeights.push_back(1);
+                if (randomWeights)
+                    ptr->edgeWeights.push_back(abs(RandNum() % 10 + 1));
+                else
+                    ptr->edgeWeights.push_back(1);
             }
         }
     }
@@ -227,6 +248,48 @@ class Graph{
 
     void ClearGraph(){
         vertices.clear();
+    }
+
+    void ClearMarks() {
+        for (auto iter = vertices.begin(); iter != vertices.end(); ++iter) {
+            (*iter)->marked = false;
+        }
+    }
+
+    Graph CreatePredecessorGraph(std::shared_ptr<Node> source) {
+        ClearMarks();
+        source->marked = true;
+
+        Graph predGraph;
+        std::vector<std::shared_ptr<Node>> adjNodesToExplore{ source };
+
+        //these are new predGraph nodes to be populated with adjList with prevNode = node from previous graph
+        std::shared_ptr<NodeWeighted> predGraphSourceNode = std::make_shared<NodeWeighted>();
+        predGraph.push_back(predGraphSourceNode);
+        std::vector<std::shared_ptr<NodeWeighted>> adjPredNodes{ predGraphSourceNode };
+        
+        while (!adjNodesToExplore.empty()) {
+            auto nextNode = adjNodesToExplore[0];
+            adjNodesToExplore.erase(adjNodesToExplore.begin());
+            std::shared_ptr<NodeWeighted> predGraphNextNode = adjPredNodes[0];
+            adjPredNodes.erase(adjPredNodes.begin());
+            for (auto& adjNode_i : nextNode->adjList) {
+                if (adjNode_i->prevNode == nextNode && adjNode_i->marked == false) {
+                    adjNode_i->marked = true;
+                    adjNodesToExplore.push_back(adjNode_i);
+                    
+                    //create corresponding node in predecessor graph
+                    std::shared_ptr<NodeWeighted> predGraphAdjNode = std::make_shared<NodeWeighted>();
+                    predGraphAdjNode->prevNode = predGraphNextNode;
+                    predGraphNextNode->adjList.push_back(predGraphAdjNode);
+                    predGraphNextNode->adjIndices.push_back(predGraph.size() - 1);
+                    predGraphNextNode->edgeWeights.push_back(1);
+                    predGraph.push_back(predGraphAdjNode);
+                    adjPredNodes.push_back(predGraphAdjNode);
+                }
+            }
+        }
+        return predGraph;
     }
 };
 }//algospp

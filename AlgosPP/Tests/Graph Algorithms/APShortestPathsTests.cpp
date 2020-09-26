@@ -5,6 +5,7 @@
 #include "../../src/Graph Algorithms/StronglyConnectedComponents.h"
 #include "../../src/Graph Algorithms/PrimsMST.h"
 #include "../../src/Graph Algorithms/BellmanFord.h"
+#include "../../src/Graph Algorithms/Dijkstras.h"
 
 #include "gtest/gtest.h"
 
@@ -17,24 +18,14 @@
 
 namespace algospp {
 
-/*namespace {
-bool operator== (Node& lhs, Node& rhs) {
-	bool adjListsMatch = true;
-	if (lhs.adjList.size() != rhs.adjList.size())
-		adjListsMatch = false;
-
-}
-}//unnamed namespace*/
-
-class DirGraph : public ::testing::Test {
+class AllPairsShortestPathsTesting : public ::testing::Test {
 	Graph* g = nullptr;
-
 protected:
 
-	DirGraph() {
+	AllPairsShortestPathsTesting() {
 
 	}
-	~DirGraph() override {
+	~AllPairsShortestPathsTesting() override {
 
 	}
 	void SetUp() override {
@@ -46,16 +37,48 @@ protected:
 
 public:
 
-	void CreateRandomDirGraph(unsigned long long numVertices, unsigned long long numEdges) {
+	void CreateRandomDirGraph(unsigned long long numVertices, unsigned long long numEdges, bool useRandomWeights = false) {
 		if (g != nullptr)
 			delete g;
-		g = new Graph(numVertices, numEdges);
+		g = new Graph(numVertices, numEdges, true, useRandomWeights);
 	}
 
 	void CreateRandomUndirWtdGraph(unsigned long long numVertices, unsigned long long numEdges) {
 		if (g != nullptr)
 			delete g;
 		g = new Graph(numVertices, numEdges, false);
+	}
+
+	bool BfDijEquivalentFirstNode() {
+		return BfDijEquivalent(*(g->begin()));
+	}
+
+	bool BfDijEquivalentAllNodes() {
+		for (auto iter = g->begin(); iter != g->end(); ++iter) {
+			if (!BfDijEquivalent(*iter))
+				return false;
+		}
+		return true;
+	}
+
+	bool BfDijEquivalent(std::shared_ptr<Node> source) {
+		BellmanFord(*g, source);
+		std::vector<long long> bfPathLengths;
+		for (auto iter = g->begin(); iter != g->end(); ++iter) {
+			bfPathLengths.push_back((*iter)->pathLength);
+		}
+
+		Dijkstras(*g, source);
+		std::vector<long long> dijPathLengths;
+		for (int i = 0; i < g->size(); ++i) {
+			auto gPathLength_i = (*g)[i]->pathLength;
+			dijPathLengths.push_back(gPathLength_i);
+		}
+		for (int i = 0; i < bfPathLengths.size(); ++i) {
+			if (bfPathLengths[i] != dijPathLengths[i])
+				return false;
+		}
+		return true;
 	}
 
 	//assumes connected undir wtd graph
@@ -87,13 +110,15 @@ public:
 	}
 };
 
-TEST_F(DirGraph, MST_NoCyclesTest) {
-	CreateRandomDirGraph(pow(10, 2), pow(10, 2));
-	EXPECT_TRUE(NoCycles());
+TEST_F(AllPairsShortestPathsTesting, FloydWarshall_CorrectTest) {
+	int n = pow(10, 2);
+	CreateRandomDirGraph(n, n, true);
+	EXPECT_TRUE(());
 }
 
-TEST_F(DirGraph, MST_RepeatableTest) {
-	CreateRandomUndirWtdGraph(pow(10, 2), pow(10, 2));
-	EXPECT_TRUE(MSTIsRepeatable());
+TEST_F(AllPairsShortestPathsTesting, JohnsonAllPairs_CorrectTest) {
+	int n = pow(10, 2);
+	CreateRandomDirGraph(n, n, true);
+	EXPECT_TRUE(());
 }
 }//algospp

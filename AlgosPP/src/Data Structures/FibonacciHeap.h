@@ -26,19 +26,6 @@ public:
 	}
 };
 
-struct DoublyLinkedNode {
-
-	std::shared_ptr<Node> node;
-	long long key = 0;
-
-	std::shared_ptr<DoublyLinkedNode> next = nullptr;
-	std::shared_ptr<DoublyLinkedNode> prev = nullptr;
-	std::shared_ptr<DoublyLinkedNode> parent = nullptr;
-	std::shared_ptr<DoublyLinkedNode> child = nullptr;
-	bool mark = false;
-	unsigned long long degree = 0;
-
-};
 
 class FibHeap {
 
@@ -76,8 +63,8 @@ class FibHeap {
 		nodeToInsert->next = tempMinNext;
 		tempMinNext->prev = nodeToInsert;
 		nodeToInsert->parent = nodeInList->parent;
-		if (nodeInList == nodeInList->prev)
-			nodeInList->prev = nodeToInsert;
+		//if (nodeInList == nodeInList->prev)
+		//	nodeInList->prev = nodeToInsert;
 		if (nodeInList->parent != nullptr)
 			++(nodeInList->parent->degree);
 	}
@@ -190,9 +177,14 @@ public:
 		++rootListSize;
 	}
 
-
 	std::shared_ptr<DoublyLinkedNode> minNode() {
 		return min;
+	}
+
+	bool empty() {
+		if (min == nullptr)
+			return true;
+		return false;
 	}
 
 	//merges h2 into this heap, h2 unusable afterwards
@@ -205,7 +197,21 @@ public:
 			min = h2.min;
 	}
 
+	void checkRootListCorrectSize() {
+		auto root_i = min;
+		if (min == nullptr && rootListSize > 0)
+			throw myexception("Fib heap root list is not the correct size or has incorrect linkages.");
+		for (int i = 0; i < rootListSize - 1; ++i) {
+			root_i = root_i->next;
+			if (root_i == min)
+				throw myexception("Fib heap root list is incorrect. Min node appears before end of root list size.");
+		}
+		if (root_i != nullptr && root_i->next != min)
+			throw myexception("Fib heap root list is not the correct size or has incorrect linkages.");
+	}
+
 	std::shared_ptr<DoublyLinkedNode> extractMin() {
+		checkRootListCorrectSize();
 		if (min == nullptr)
 			return nullptr;
 
@@ -233,10 +239,12 @@ public:
 		extractedMin->prev = nullptr;
 		extractedMin->child = nullptr;
 		--n;
+		checkRootListCorrectSize();
 		return extractedMin;
 	}
 
 	void decreaseKey(std::shared_ptr<DoublyLinkedNode> x, long long newKey) {
+		checkRootListCorrectSize();
 		if (min == nullptr) {
 			std::cout << "Fib heap is empty. Cannot decrease key." << std::endl;
 			throw myexception("Fib heap is empty. Cannot decrease key.");
@@ -250,8 +258,10 @@ public:
 			cut(x, y);
 			cascadingCut(y);
 		}
-		if (x->key <= min->key)
+		//can't be <= because x is only cut if key is < y key
+		if (x->key < min->key)
 			min = x;
+		checkRootListCorrectSize();
 	}
 
 	std::shared_ptr<DoublyLinkedNode> deleteNode(std::shared_ptr<DoublyLinkedNode> x) {

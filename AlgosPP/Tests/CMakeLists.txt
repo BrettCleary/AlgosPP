@@ -22,6 +22,10 @@ add_executable(MinSpanTreeTests "Graph Algorithms/MinSpanningTreeTests.cpp")
 target_link_libraries(MinSpanTreeTests PRIVATE gtest_main AlgosPPGraphBasic AlgosPPGraphAdv)
 SET_TARGET_PROPERTIES(MinSpanTreeTests PROPERTIES LINK_FLAGS "/PROFILE")
 
-add_executable(ShortPathsTests "Graph Algorithms/ShortestPathsTests.cpp")
+add_executable(ShortPathsTests "Graph Algorithms/SSShortestPathsTests.cpp")
+target_link_libraries(ShortPathsTests PRIVATE gtest_main AlgosPPGraphBasic AlgosPPGraphAdv)
+SET_TARGET_PROPERTIES(ShortPathsTests PROPERTIES LINK_FLAGS "/PROFILE")
+
+add_executable(ShortPathsTests "Graph Algorithms/APShortestPathsTests.cpp")
 target_link_libraries(ShortPathsTests PRIVATE gtest_main AlgosPPGraphBasic AlgosPPGraphAdv)
 SET_TARGET_PROPERTIES(ShortPathsTests PROPERTIES LINK_FLAGS "/PROFILE")
