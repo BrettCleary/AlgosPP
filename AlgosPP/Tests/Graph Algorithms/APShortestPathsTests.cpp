@@ -6,6 +6,8 @@
 #include "../../src/Graph Algorithms/PrimsMST.h"
 #include "../../src/Graph Algorithms/BellmanFord.h"
 #include "../../src/Graph Algorithms/Dijkstras.h"
+#include "../../src/Graph Algorithms/FloydWarshall.h"
+#include "../../src/Graph Algorithms/JohnsonAllPairs.h"
 
 #include "gtest/gtest.h"
 
@@ -37,88 +39,69 @@ protected:
 
 public:
 
-	void CreateRandomDirGraph(unsigned long long numVertices, unsigned long long numEdges, bool useRandomWeights = false) {
+	void CreateRandomDirGraph(unsigned long long numVertices, unsigned long long numEdges, bool isDir = true, bool useRandomWeights = true) {
 		if (g != nullptr)
 			delete g;
-		g = new Graph(numVertices, numEdges, true, useRandomWeights);
+		g = new Graph(numVertices, numEdges, isDir, useRandomWeights);
 	}
 
-	void CreateRandomUndirWtdGraph(unsigned long long numVertices, unsigned long long numEdges) {
-		if (g != nullptr)
-			delete g;
-		g = new Graph(numVertices, numEdges, false);
-	}
 
-	bool BfDijEquivalentFirstNode() {
-		return BfDijEquivalent(*(g->begin()));
+	bool FWJohnsonEquivalent() {
+		auto fwShortestMatrix = FloydWarshall(*g);
+		auto japShortestMatrix = JohnsonAllPairs(*g);
+		for (int i = 0; i < fwShortestMatrix->size(); ++i) {
+			for (int j = 0; j < (*fwShortestMatrix)[0].size(); ++j) {
+				if ((*fwShortestMatrix)[i][j] != (*japShortestMatrix)[i][j])
+					return false;
+			}
+		}
+		return true;
 	}
-
-	bool BfDijEquivalentAllNodes() {
-		for (auto iter = g->begin(); iter != g->end(); ++iter) {
-			if (!BfDijEquivalent(*iter))
+	
+	bool FloydBellmanFordEquivalent() {
+		auto fwShortestMatrix = FloydWarshall(*g);
+		for (int i = 0; i < fwShortestMatrix->size(); ++i) {
+			bool noCycles = BellmanFord(*g, (*g)[i]);
+			if (!noCycles)
 				return false;
+			for (int j = 0; j < (*fwShortestMatrix)[0].size(); ++j) {
+				if ((*fwShortestMatrix)[i][j] != (*g)[j]->pathLength)
+					return false;
+			}
 		}
 		return true;
 	}
 
-	bool BfDijEquivalent(std::shared_ptr<Node> source) {
-		BellmanFord(*g, source);
-		std::vector<long long> bfPathLengths;
-		for (auto iter = g->begin(); iter != g->end(); ++iter) {
-			bfPathLengths.push_back((*iter)->pathLength);
-		}
-
-		Dijkstras(*g, source);
-		std::vector<long long> dijPathLengths;
-		for (int i = 0; i < g->size(); ++i) {
-			auto gPathLength_i = (*g)[i]->pathLength;
-			dijPathLengths.push_back(gPathLength_i);
-		}
-		for (int i = 0; i < bfPathLengths.size(); ++i) {
-			if (bfPathLengths[i] != dijPathLengths[i])
+	bool JohnsonAllPairsBellmanFordEquivalent() {
+		auto fwShortestMatrix = FloydWarshall(*g);
+		for (int i = 0; i < fwShortestMatrix->size(); ++i) {
+			bool noCycles = BellmanFord(*g, (*g)[i]);
+			if (!noCycles)
 				return false;
-		}
-		return true;
-	}
-
-	//assumes connected undir wtd graph
-	bool MSTIsRepeatable() {
-		if (g == nullptr)
-			return false;
-		std::shared_ptr<NodeWeighted> g_0 = std::static_pointer_cast<NodeWeighted>((*g)[0]);
-		unsigned long long spanTreeWeight = MST_Weight_Prim(*g, g_0);
-		for (auto iter = g->begin(); iter != g->end(); ++iter) {
-			std::shared_ptr<NodeWeighted> g_i = std::static_pointer_cast<NodeWeighted>(*iter);
-			auto treeWeight_i = MST_Weight_Prim(*g, g_i);
-			if (spanTreeWeight != treeWeight_i)
-				return false;
-		}
-		return true;
-	}
-
-	bool NoCycles() {
-		if (g == nullptr)
-			return false;
-		std::shared_ptr<NodeWeighted> g_0 = std::static_pointer_cast<NodeWeighted>((*g)[0]);
-		unsigned long long spanTreeWeight = MST_Weight_Prim(*g, g_0);
-		Graph gPred = g->CreatePredecessorGraph(*g->begin());
-		for (auto iter = g->begin(); iter != g->end(); ++iter) {
-			if (!BellmanFord(gPred, *iter))
-				return false;
+			for (int j = 0; j < (*fwShortestMatrix)[0].size(); ++j) {
+				if ((*fwShortestMatrix)[i][j] != (*g)[j]->pathLength)
+					return false;
+			}
 		}
 		return true;
 	}
 };
 
-TEST_F(AllPairsShortestPathsTesting, FloydWarshall_CorrectTest) {
+TEST_F(AllPairsShortestPathsTesting, JohnsonFloydWarshall_EquivalentTest) {
 	int n = pow(10, 2);
 	CreateRandomDirGraph(n, n, true);
-	EXPECT_TRUE(());
+	EXPECT_TRUE(FWJohnsonEquivalent());
 }
 
-TEST_F(AllPairsShortestPathsTesting, JohnsonAllPairs_CorrectTest) {
-	int n = pow(10, 2);
+TEST_F(AllPairsShortestPathsTesting, FloydWarshallBellmanFord_EquivalentTest) {
+	int n = pow(10,2);
 	CreateRandomDirGraph(n, n, true);
-	EXPECT_TRUE(());
+	EXPECT_TRUE(FloydBellmanFordEquivalent());
+}
+
+TEST_F(AllPairsShortestPathsTesting, JohnsonAllPairsBellmanFord_EquivalentTest) {
+	int n = pow(10,2);
+	CreateRandomDirGraph(n, n, true);
+	EXPECT_TRUE(JohnsonAllPairsBellmanFordEquivalent());
 }
 }//algospp

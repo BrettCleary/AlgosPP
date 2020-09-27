@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <set>
 #include "..\..\Misc\RandomNum.h"
 
 namespace algospp{
@@ -109,7 +110,7 @@ class Graph{
     std::vector<std::shared_ptr<Node>> vertices;
 
     public:
-    std::shared_ptr<std::vector<std::vector<unsigned long long>>> adjMatrix = nullptr;
+    std::shared_ptr<std::vector<std::vector<long long>>> adjMatrix = nullptr;
 
     Graph(){}
 
@@ -152,6 +153,7 @@ class Graph{
     void CreateRandomGraph(unsigned long long numVertices, unsigned long long numEdges, bool randomWeights = false){
         ClearGraph();
         int edgesPerVert = numEdges / numVertices + 1;
+        adjMatrix = std::make_shared<std::vector<std::vector<long long>>>(numVertices, std::vector<long long>(numVertices, LLONG_MAX));
 
         for (int i = 0; i < numVertices; ++i) {
             auto ptr = std::make_shared<NodeDL>();
@@ -159,22 +161,37 @@ class Graph{
         }
         for (int v = 0; v < numVertices; ++v) {
             auto ptr = std::static_pointer_cast<NodeDL>(vertices[v]);
+            std::set<unsigned long long> edgesAdded;
             for (int i = 0; i < edgesPerVert; ++i) {
                 unsigned long long index = RandNum() % numVertices;
+                if (edgesAdded.find(index) == edgesAdded.end())
+                    edgesAdded.insert(index);
+                else
+                    continue;
                 ptr->adjIndices.push_back(index);
                 auto adjPtri = vertices[index];
                 ptr->adjList.push_back(std::move(adjPtri));
-                if (randomWeights)
-                    ptr->edgeWeights.push_back(abs(RandNum() % 10 + 1));
-                else
+                if (randomWeights) {
+                    auto randomWeight = abs(RandNum() % 10 + 1);
+                    ptr->edgeWeights.push_back(randomWeight);
+                    (*adjMatrix)[v][index] = randomWeight;
+                }
+                else {
                     ptr->edgeWeights.push_back(1);
+                    (*adjMatrix)[v][index] = 1;
+                }
             }
+        }
+
+        for (int i = 0; i < numVertices; ++i) {
+            (*adjMatrix)[i][i] = 0;
         }
     }
 
     void CreateRandomUnDirWtdGraph(unsigned long long numVertices, unsigned long long numEdges) {
         ClearGraph();
         int edgesPerVert = numEdges / numVertices + 1;
+        adjMatrix = std::make_shared<std::vector<std::vector<long long>>>(numVertices, std::vector<long long>(numVertices, LLONG_MAX));
 
         for (int i = 0; i < numVertices; ++i) {
             auto ptr = std::make_shared<NodeWeighted>();
@@ -197,7 +214,14 @@ class Graph{
                 adjPtr->adjList.push_back(ptr);
                 adjPtr->adjIndices.push_back(v);
                 adjPtr->edgeWeights.push_back(edgeW);
+
+                (*adjMatrix)[v][index] = edgeW;
+                (*adjMatrix)[index][v] = edgeW;
             }
+        }
+
+        for (int i = 0; i < numVertices; ++i) {
+            (*adjMatrix)[i][i] = 0;
         }
     }
 

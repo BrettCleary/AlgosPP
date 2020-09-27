@@ -25,7 +25,12 @@ bool BellmanFord(Graph& g, std::shared_ptr<Node> source) {
 		for (int j = 0; j < numEdgesNode_i; ++j) {
 			auto uWtd = std::static_pointer_cast<NodeWeighted>(u);
 			auto vWtd = std::static_pointer_cast<NodeWeighted>(u->adjList[j]);
-			if (vWtd->pathLength > uWtd->pathLength + uWtd->edgeWeights[j])
+			auto vLength = vWtd->pathLength;
+			auto uLength = uWtd->pathLength;
+			auto uWeight = uWtd->edgeWeights[j];
+			if (((vLength > 0 && uLength < LLONG_MAX - uWeight) ||
+				(vLength < 0 && uLength > LLONG_MIN - uWeight)) &&
+				vLength > uLength + uWeight)
 				return false;
 		}
 	}
